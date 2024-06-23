@@ -8,3 +8,7 @@ build
 eclipse
 .settings
 .project
+
+# Ignore IntelliJ IDEA profiles
+.idea
+app/app.iml
