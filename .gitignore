@@ -8,6 +8,7 @@ build
 eclipse
 .settings
 .project
+app/.classpath
 
 # Ignore IntelliJ IDEA profiles
 .idea

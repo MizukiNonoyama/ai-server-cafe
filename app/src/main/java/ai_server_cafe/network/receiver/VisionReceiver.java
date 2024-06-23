@@ -8,7 +8,7 @@ import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.util.Optional;
 
-public class VisionReceiver {
+public class VisionReceiver extends Thread {
 	private static RawVisionData visionData = new RawVisionData();
 	private static boolean isUpdated = false;
 	private static Optional<VisionReceiver> instance = Optional.empty();
@@ -17,7 +17,7 @@ public class VisionReceiver {
 	public void run() {
 		try {	
 			MulticastSocket socket = new MulticastSocket(new InetSocketAddress(10556));
-			socket.joinGroup(new InetSocketAddress("224.5.23.2", 10556), NetworkInterface.getByName("10.22.249.114"));
+			socket.joinGroup(new InetSocketAddress("224.5.23.2", 10556), NetworkInterface.getByName("10.22.254.149"));
 			Thread.sleep(10, 0);
 			while(true) {
 				try {

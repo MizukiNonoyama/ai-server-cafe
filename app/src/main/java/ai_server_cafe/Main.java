@@ -1,5 +1,7 @@
 package ai_server_cafe;
 
+import ai_server_cafe.network.receiver.VisionReceiver;
+
 public class Main {
 	public String getGreeting() {
 		return "Hello World!";
