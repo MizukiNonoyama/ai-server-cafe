@@ -1,4 +1,4 @@
-package ai_server_cafe.network.proto;
+package ai_server_cafe.network.receiver;
 
 public class RawVisionData {
 	private final String message;
