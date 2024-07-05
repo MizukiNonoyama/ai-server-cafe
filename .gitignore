@@ -9,6 +9,7 @@ eclipse
 .settings
 .project
 app/.classpath
+app/.project
 
 # Ignore IntelliJ IDEA profiles
 .idea
