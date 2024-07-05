@@ -1,5 +1,6 @@
 package ai_server_cafe.gui;
 
+import ai_server_cafe.config.Config;
 import ai_server_cafe.gui.interfaces.IContainerCafe;
 import ai_server_cafe.gui.interfaces.IGraphicalComponent;
 import ai_server_cafe.util.interfaces.IFunction;
@@ -8,6 +9,8 @@ import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -16,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 public class GameWindow extends JFrame {
-    private VisionArea visionArea;
     private final Logger logger;
     private final Map<Class<? extends IContainerCafe>, Component> componentMap;
 
@@ -33,23 +35,31 @@ public class GameWindow extends JFrame {
         });
         this.componentMap = new HashMap<>();
         this.componentMap.put(VisionArea.class, new VisionArea((int)(this.getHeight() * 12.0 / 9.0), this.getHeight()));
+        this.componentMap.put(ConfigArea.class, new ConfigArea((int)(this.getHeight() * 12.0 / 9.0), 0, 120, 960));
         for (Map.Entry<Class<? extends IContainerCafe>, Component> entry : this.componentMap.entrySet())
             this.getContentPane().add(entry.getValue());
+        this.addComponentListener(new ComponentAdapter() {
+            public void componentResized(ComponentEvent componentEvent) {
+                onResize(componentEvent.getComponent().getWidth(), componentEvent.getComponent().getHeight());
+            }});
     }
 
 
     /**
      * add contents, this method must call on init.
      * @param contents
-     * @param clazz
+     * @param parent
      */
-    public void addContents(List<Container> contents, Class<?> clazz) {
-        if (clazz == null) {
-            for (Container c : contents)
+    public void addContents(List<Component> contents, Class<? extends IContainerCafe> parent) {
+        if (parent == null) {
+            for (Component c : contents)
                 this.getContentPane().add(c);
-        } else if (clazz == VisionArea.class) {
-            for (Container c : contents)
-                this.visionArea.add(c);
+        } else {
+            if(this.componentMap.containsKey(parent)) {
+                if (this.componentMap.get(parent) instanceof IContainerCafe) {
+                    ((IContainerCafe)this.componentMap.get(parent)).addActionContents(contents);
+                }
+            }
         }
     }
 
@@ -68,5 +78,9 @@ public class GameWindow extends JFrame {
                 }
             }
         }
+    }
+
+    public void onResize(int newWidth, int newHeight) {
+        this.logger.info("{}, {}", newWidth, newHeight);
     }
 }

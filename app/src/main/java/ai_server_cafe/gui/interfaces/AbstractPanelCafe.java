@@ -1,5 +1,7 @@
 package ai_server_cafe.gui.interfaces;
 
+import ai_server_cafe.config.Config;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
@@ -7,8 +9,6 @@ import java.util.List;
 
 public abstract class AbstractPanelCafe extends JPanel implements IContainerCafe {
     private final List<IGraphicalComponent> components;
-    protected int widthWindow;
-    protected int heightWindow;
 
     public AbstractPanelCafe(int x, int y, int width, int height) {
         super();
@@ -19,7 +19,7 @@ public abstract class AbstractPanelCafe extends JPanel implements IContainerCafe
     @Override
     public void paintComponent(Graphics graphics) {
         super.paintComponent(graphics);
-        if (graphics instanceof Graphics2D) {
+        if (graphics instanceof Graphics2D && this.isVisibleConfig()) {
             this.initPaint((Graphics2D) graphics);
             for (IGraphicalComponent gc : this.components) {
                 gc.paint((Graphics2D) graphics);
@@ -34,8 +34,11 @@ public abstract class AbstractPanelCafe extends JPanel implements IContainerCafe
 
     public abstract void initPaint(Graphics2D graphics2D);
 
-    public void rescaled(int widthWindow, int heightWindow) {
-        this.widthWindow = widthWindow;
-        this.heightWindow = heightWindow;
+    @Override
+    public void addActionContents(List<Component> component) {
+        for (Component c : component)
+            this.add(c);
     }
+
+    public abstract boolean isVisibleConfig();
 }

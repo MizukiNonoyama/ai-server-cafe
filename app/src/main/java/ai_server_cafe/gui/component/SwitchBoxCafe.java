@@ -1,5 +1,7 @@
 package ai_server_cafe.gui.component;
 
+import ai_server_cafe.util.interfaces.IFunction;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -11,8 +13,12 @@ public class SwitchBoxCafe extends AbstractButton {
     private final int size;
     private String text;
     private int count;
+    private final Color backgroundFalse;
+    private final Color backgroundTrue;
+    private final Color button;
+    private final IFunction<Void> onSwitch;
 
-    public SwitchBoxCafe(String label0, String label1, boolean valueDefault, int size, int x, int y) {
+    public SwitchBoxCafe(String label0, String label1, boolean valueDefault, int size, int x, int y, Color backgroundFalse, Color backgroundTrue, Color button, IFunction<Void> onSwitch) {
         this.label0 = label0;
         this.label1 = label1;
         this.setModel(new DefaultButtonModel());
@@ -29,6 +35,10 @@ public class SwitchBoxCafe extends AbstractButton {
         });
         this.size = size;
         this.count = 0;
+        this.backgroundFalse = backgroundFalse;
+        this.backgroundTrue = backgroundTrue;
+        this.button = button;
+        this.onSwitch = onSwitch;
     }
 
     @Override
@@ -60,8 +70,27 @@ public class SwitchBoxCafe extends AbstractButton {
         } else {
             setText(this.label0);
         }
+        if (this.onSwitch != null) {
+            this.onSwitch.function(value);
+        }
         super.setSelected(value);
     }
 
-    public
+    @Override
+    public void paintComponent(Graphics graphics) {
+        if (this.isSelected()) {
+            graphics.setColor(this.backgroundTrue);
+        } else {
+            graphics.setColor(this.backgroundFalse);
+        }
+        graphics.fillOval(0, 0, this.size, this.size);
+        graphics.fillOval(this.size, 0, this.size, this.size);
+        graphics.fillRect(this.size / 2, 0, this.size, this.size);
+        graphics.setColor(this.button);
+        int offset = 0;
+        if (this.isSelected()) {
+            offset = this.size;
+        }
+        graphics.fillOval(offset + (int)(0.1 * this.size), (int)(0.1 * this.size), (int)(0.8 * this.size), (int)(0.8 * this.size));
+    }
 }
