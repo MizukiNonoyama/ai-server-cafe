@@ -1,7 +1,7 @@
-### ai-server-cafe
+# ai-server-cafe
 
 ## installation
-# intelliJ IDEA
+### intelliJ IDEA
 1. Install intelliJ IDEA
 2. Clone repository
 3. Change directory to repository folder cloned
@@ -9,7 +9,7 @@
 ```$ ./gradlew idea``` (linux & mac)
 ```$ gradlew idea``` (windows)
 5. Open the folder on intelliJ IDEA
-# Eclipse
+### Eclipse
 1. Install Eclipse (Ubuntu 24.04ではEclipseはクラッシュする(2024/7/5現在))
 2. Clone repository
 3. Change directory to repository folder cloned
