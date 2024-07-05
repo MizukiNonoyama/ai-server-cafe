@@ -2,21 +2,12 @@ package ai_server_cafe.gui;
 
 import ai_server_cafe.Main;
 import ai_server_cafe.config.Config;
-import ai_server_cafe.gui.component.SwitchBoxCafe;
 import ai_server_cafe.gui.interfaces.IContainerCafe;
 import ai_server_cafe.gui.interfaces.IGraphicalComponent;
-import ai_server_cafe.gui.item.CircleCafe;
-import ai_server_cafe.gui.item.LineCafe;
-import ai_server_cafe.gui.item.RectCafe;
-import ai_server_cafe.model.Field;
-import ai_server_cafe.updater.WorldUpdater;
+import ai_server_cafe.gui.registry.RegistryGUIItem;
 import ai_server_cafe.util.TimeHelper;
-import ai_server_cafe.util.gui.ColorHelper;
 import ai_server_cafe.util.interfaces.IFunction;
 import ai_server_cafe.util.thread.AbstractLoopThreadCafe;
-import org.checkerframework.checker.units.qual.A;
-
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
@@ -77,10 +68,11 @@ public final class GuiThread extends AbstractLoopThreadCafe {
     protected void loop() {
         double nowDate = TimeHelper.now();
         if (nowDate - lastDate >= Config.GRAPHIC_CYCLE) {
-            for (Map.Entry<Class<? extends IContainerCafe>, LinkedHashMap<String, IGraphicalComponent>> entry : this.graphicalComponentsMap.entrySet()) {
-                List<IGraphicalComponent> list = new ArrayList<>(entry.getValue().values());
-                this.window.setGraphicalComponent(list , entry.getKey());
-                logger.info("repaint");
+            synchronized (this) {
+                for (Map.Entry<Class<? extends IContainerCafe>, LinkedHashMap<String, IGraphicalComponent>> entry : this.graphicalComponentsMap.entrySet()) {
+                    List<IGraphicalComponent> list = new ArrayList<>(entry.getValue().values());
+                    this.window.setGraphicalComponents(list , entry.getKey());
+                }
             }
             this.window.repaint();
             this.lastDate = nowDate;
@@ -98,34 +90,7 @@ public final class GuiThread extends AbstractLoopThreadCafe {
         };
         this.window = new GameWindow("AI Server Cafe", 1280, 720, onExit);
         this.window.setVisible(this.isVisible);
-        List<Component> components1 = new ArrayList<>();
-        IFunction<Void> onSwitch = new IFunction<Void>() {
-            @Override
-            public Void function(Object... args) {
-                if(args.length == 1 && args[0] instanceof Boolean) {
-                    Config.getInstance().setVisionVisible((Boolean) args[0]);
-                }
-                return null;
-            }
-        };
-        components1.add(new SwitchBoxCafe("", "", true, 20, 30, 30, ColorHelper.SWITCH_GRAY, ColorHelper.ARCHIVE_SKY, ColorHelper.LINE_WHITE, onSwitch));
-        this.window.addContents(components1, ConfigArea.class);
-
-        // Init field draw
-        // LinkedHashMapを使っているので登録順に表示される component idを予めここで定義しておく Backgroundに表示するものは中身も書いておいてよい
-        Field field = WorldUpdater.getInstance().getField();
-        List<IGraphicalComponent> components = new ArrayList<>();
-        components.add(new RectCafe("background", -field.getCarpetWidth() / 2.0, -field.getCarpetHeight() / 2.0, field.getCarpetWidth(), field.getCarpetHeight(), ColorHelper.SCREEN_BLACK));
-        components.add(new LineCafe("goalToGoalLine", -field.getGameWidth() / 2.0, 0.0, field.getGameWidth() / 2.0, 0.0, ColorHelper.LINE_WHITE, 4.0F));
-        components.add(new LineCafe("centerLine", 0.0, -field.getGameHeight() / 2.0, 0.0, field.getGameHeight() / 2.0, ColorHelper.LINE_WHITE, 4.0F));
-        components.add(new RectCafe("fieldLine", -field.getGameWidth() / 2.0, -field.getGameHeight() / 2.0, field.getGameWidth(), field.getGameHeight(), ColorHelper.LINE_WHITE, 4.0F));
-        components.add(new RectCafe("outsideLine", -field.getFieldWidth() / 2.0, -field.getFieldHeight() / 2.0, field.getFieldWidth(), field.getFieldHeight(), ColorHelper.WALL_RED, 8.0F));
-        components.add(new CircleCafe("centerCircle", ColorHelper.LINE_WHITE, 0.0, 0.0, field.getCenterCircle(), false, 4.0F));
-        components.add(new RectCafe("ourPenalty", -field.getGameWidth() / 2.0, -field.getPenaltyWidth() / 2.0, field.getPenaltyLength(), field.getPenaltyWidth(), ColorHelper.LINE_WHITE, 4.0F));
-        components.add(new RectCafe("oppositePenalty", field.getGameWidth() / 2.0 - field.getPenaltyLength(), -field.getPenaltyWidth() / 2.0, field.getPenaltyLength(), field.getPenaltyWidth(), ColorHelper.LINE_WHITE, 4.0F));
-        components.add(new RectCafe("ourGoal", -field.getGameWidth() / 2.0 - field.getGoalLength(), -field.getGoalWidth() / 2.0, field.getGoalLength(), field.getGoalWidth(), ColorHelper.LINE_WHITE, 4.0F));
-        components.add(new RectCafe("oppositeGoal", field.getGameWidth() / 2.0, -field.getGoalWidth() / 2.0, field.getGoalLength(), field.getGoalWidth(), ColorHelper.LINE_WHITE, 4.0F));
-
-        this.addAllGraphicalComponents(VisionArea.class, components);
+        RegistryGUIItem.registerContents(this.window);
+        RegistryGUIItem.registerGraphicalContents();
     }
 }

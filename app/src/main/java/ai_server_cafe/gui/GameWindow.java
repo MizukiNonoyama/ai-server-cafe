@@ -13,10 +13,8 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class GameWindow extends JFrame {
     private final Logger logger;
@@ -34,10 +32,11 @@ public class GameWindow extends JFrame {
             }
         });
         this.componentMap = new HashMap<>();
-        this.componentMap.put(VisionArea.class, new VisionArea((int)(this.getHeight() * 12.0 / 9.0), this.getHeight()));
+        /*this.componentMap.put(VisionArea.class, new VisionArea((int)(this.getHeight() * 12.0 / 9.0), this.getHeight()));
         this.componentMap.put(ConfigArea.class, new ConfigArea((int)(this.getHeight() * 12.0 / 9.0), 0, 120, 960));
         for (Map.Entry<Class<? extends IContainerCafe>, Component> entry : this.componentMap.entrySet())
             this.getContentPane().add(entry.getValue());
+        */
         this.addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent componentEvent) {
                 onResize(componentEvent.getComponent().getWidth(), componentEvent.getComponent().getHeight());
@@ -52,12 +51,37 @@ public class GameWindow extends JFrame {
      */
     public void addContents(List<Component> contents, Class<? extends IContainerCafe> parent) {
         if (parent == null) {
-            for (Component c : contents)
-                this.getContentPane().add(c);
+            for (Component c : contents) {
+                if (c instanceof IContainerCafe) {
+                    IContainerCafe containerCafe = (IContainerCafe)c;
+                    this.componentMap.put(containerCafe.getClass(), c);
+                    this.getContentPane().add(this.componentMap.get(containerCafe.getClass()));
+                } else {
+                    this.getContentPane().add(c);
+                }
+            }
         } else {
             if(this.componentMap.containsKey(parent)) {
                 if (this.componentMap.get(parent) instanceof IContainerCafe) {
                     ((IContainerCafe)this.componentMap.get(parent)).addActionContents(contents);
+                }
+            }
+        }
+    }
+
+    public void addContent(Component content, Class<? extends IContainerCafe> parent) {
+        if (parent == null) {
+            if (content instanceof IContainerCafe) {
+                IContainerCafe containerCafe = (IContainerCafe)content;
+                this.componentMap.put(containerCafe.getClass(), content);
+                this.getContentPane().add(this.componentMap.get(containerCafe.getClass()));
+            } else {
+                this.getContentPane().add(content);
+            }
+        } else {
+            if(this.componentMap.containsKey(parent)) {
+                if (this.componentMap.get(parent) instanceof IContainerCafe) {
+                    ((IContainerCafe)this.componentMap.get(parent)).addActionContents(Arrays.asList(content));
                 }
             }
         }
@@ -68,7 +92,7 @@ public class GameWindow extends JFrame {
      * @param components
      * @param parent
      */
-    public void setGraphicalComponent(List<IGraphicalComponent> components, Class<? extends IContainerCafe> parent) {
+    public void setGraphicalComponents(List<IGraphicalComponent> components, Class<? extends IContainerCafe> parent) {
         if (parent == null) {
             this.logger.info("Parent was null");
         } else {

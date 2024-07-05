@@ -85,7 +85,7 @@ public class SwitchBoxCafe extends AbstractButton {
         }
         graphics.fillOval(0, 0, this.size, this.size);
         graphics.fillOval(this.size, 0, this.size, this.size);
-        graphics.fillRect(this.size / 2, 0, this.size, this.size);
+        graphics.fillRect(this.size / 2, 1, this.size, this.size);
         graphics.setColor(this.button);
         int offset = 0;
         if (this.isSelected()) {

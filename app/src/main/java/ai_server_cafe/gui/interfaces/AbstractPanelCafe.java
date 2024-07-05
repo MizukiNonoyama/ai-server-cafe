@@ -12,6 +12,7 @@ public abstract class AbstractPanelCafe extends JPanel implements IContainerCafe
 
     public AbstractPanelCafe(int x, int y, int width, int height) {
         super();
+        this.setLayout(null);
         this.setBounds(x, y, width, height);
         this.components = new ArrayList<IGraphicalComponent>();
     }
@@ -21,15 +22,19 @@ public abstract class AbstractPanelCafe extends JPanel implements IContainerCafe
         super.paintComponent(graphics);
         if (graphics instanceof Graphics2D && this.isVisibleConfig()) {
             this.initPaint((Graphics2D) graphics);
-            for (IGraphicalComponent gc : this.components) {
-                gc.paint((Graphics2D) graphics);
+            synchronized (this.components) {
+                for (IGraphicalComponent gc : this.components) {
+                    gc.paint((Graphics2D) graphics);
+                }
             }
         }
     }
 
     public void setGraphicalContents(List<IGraphicalComponent> graphicalContents) {
-        this.components.clear();
-        this.components.addAll(graphicalContents);
+        synchronized (this.components) {
+            this.components.clear();
+            this.components.addAll(graphicalContents);
+        }
     }
 
     public abstract void initPaint(Graphics2D graphics2D);

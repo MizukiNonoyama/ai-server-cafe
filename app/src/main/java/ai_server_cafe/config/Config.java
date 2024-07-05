@@ -1,5 +1,12 @@
 package ai_server_cafe.config;
 
+import com.google.gson.stream.JsonWriter;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
 public class Config {
     private static Config instance = null;
     private boolean visionVisible;
@@ -15,6 +22,18 @@ public class Config {
     }
 
     synchronized public boolean load() {
+        try {
+            File configFile = new File("config/config.json");
+            boolean exist = !configFile.createNewFile();
+            if (!exist) {
+                // write new file
+                //JsonWriter writer = new JsonWriter();
+            }
+            //load
+
+        } catch(IOException exception) {
+
+        }
         return false;
     }
 
