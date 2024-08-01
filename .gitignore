@@ -11,6 +11,7 @@ eclipse/
 .settings/
 app/.classpath
 app/.project
+.project
 
 # Ignore IntelliJ IDEA profiles
 .idea/
