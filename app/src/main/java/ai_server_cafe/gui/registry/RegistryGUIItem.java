@@ -1,6 +1,7 @@
 package ai_server_cafe.gui.registry;
 
 import ai_server_cafe.config.Config;
+import ai_server_cafe.config.ConfigManager;
 import ai_server_cafe.gui.ConfigArea;
 import ai_server_cafe.gui.GameWindow;
 import ai_server_cafe.gui.GuiThread;
@@ -12,6 +13,7 @@ import ai_server_cafe.gui.item.LineCafe;
 import ai_server_cafe.gui.item.RectCafe;
 import ai_server_cafe.model.Field;
 import ai_server_cafe.updater.WorldUpdater;
+import ai_server_cafe.util.TeamColor;
 import ai_server_cafe.util.gui.ColorHelper;
 import ai_server_cafe.util.interfaces.IFunction;
 
@@ -21,6 +23,7 @@ import java.util.List;
 
 public class RegistryGUIItem {
     public static void registerContents(GameWindow window) {
+        Config config = ConfigManager.getInstance().getConfig();
         // Panelを追加
         window.addContent(new VisionArea((int)(window.getHeight() * 12.0 / 9.0), window.getHeight()), null);
         window.addContent(new ConfigArea((int)(window.getHeight() * 12.0 / 9.0), 0, 300, 960), null);
@@ -31,22 +34,24 @@ public class RegistryGUIItem {
             @Override
             public Void function(Object... args) {
                 if(args.length == 1 && args[0] instanceof Boolean) {
-                    Config.getInstance().setVisionVisible((Boolean) args[0]);
+                    ConfigManager.getInstance().getConfig().isVisionAreaVisible = (Boolean) args[0];
+                    ConfigManager.getInstance().markDirty();
                 }
                 return null;
             }
         };
-        components1.add(new SwitchBoxCafe("", "", true, 20, 30, 30, ColorHelper.SWITCH_GRAY, ColorHelper.ARCHIVE_SKY, ColorHelper.LINE_WHITE, onSwitchVision));
+        components1.add(new SwitchBoxCafe("", "", config.isVisionAreaVisible, 20, 30, 30, ColorHelper.SWITCH_GRAY, ColorHelper.ARCHIVE_SKY, ColorHelper.LINE_WHITE, onSwitchVision));
         IFunction<Void> onSwitchTeamColor = new IFunction<Void>() {
             @Override
             public Void function(Object... args) {
                 if(args.length == 1 && args[0] instanceof Boolean) {
-                    //Config.getInstance().setVisionVisible((Boolean) args[0]);
+                    ConfigManager.getInstance().getConfig().teamColor = ((Boolean) args[0]) ? TeamColor.BLUE.getId() : TeamColor.YELLOW.getId();
+                    ConfigManager.getInstance().markDirty();
                 }
                 return null;
             }
         };
-        components1.add(new SwitchBoxCafe("", "", false, 20, 90, 100, ColorHelper.ROBOT_YELLOW, ColorHelper.ROBOT_BLUE, ColorHelper.LINE_WHITE, onSwitchTeamColor));
+        components1.add(new SwitchBoxCafe("", "", config.teamColor == TeamColor.BLUE.getId(), 20, 90, 100, ColorHelper.ROBOT_YELLOW, ColorHelper.ROBOT_BLUE, ColorHelper.LINE_WHITE, onSwitchTeamColor));
         window.addContents(components1, ConfigArea.class);
     }
 

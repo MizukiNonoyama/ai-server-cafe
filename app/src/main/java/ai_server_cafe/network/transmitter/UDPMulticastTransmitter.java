@@ -1,13 +1,21 @@
 package ai_server_cafe.network.transmitter;
 
+import ai_server_cafe.Main;
+import ai_server_cafe.util.SendCommand;
 import ai_server_cafe.util.thread.AbstractLoopThreadCafe;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.net.*;
 import java.util.Arrays;
+import java.util.List;
 
 public abstract class UDPMulticastTransmitter extends AbstractLoopThreadCafe {
-    private MulticastSocket socket = null;
+    protected MulticastSocket socket = null;
+    private byte[] sendBuf;
+    private boolean waitingSend;
+    protected InetAddress hostAddress;
+    protected int port;
 
     protected UDPMulticastTransmitter(String name) {
         super(name);
@@ -20,7 +28,7 @@ public abstract class UDPMulticastTransmitter extends AbstractLoopThreadCafe {
     public void startWith(int port, String hostAddress, String interfaceAddress) {
         boolean startFlag = true;
         try {
-            this.socket = new MulticastSocket(new InetSocketAddress(port));
+            this.socket = new MulticastSocket();
         } catch (IOException e) {
             this.logger.error("Multicast socket cannot bind this port : {}", port);
             startFlag = false;
@@ -34,14 +42,17 @@ public abstract class UDPMulticastTransmitter extends AbstractLoopThreadCafe {
         }
         if(!interfaceAddress.isEmpty()) {
             try {
-                ni = NetworkInterface.getByName(interfaceAddress);
-            } catch (SocketException e) {
+                ni = NetworkInterface.getByInetAddress(InetAddress.getByName(interfaceAddress));
+            } catch (SocketException | UnknownHostException e) {
                 this.logger.error("Interface address [%s] is not exist", interfaceAddress);
                 startFlag = false;
             }
         }
         try {
-            this.socket.joinGroup(new InetSocketAddress(hostAddress, port), ni);
+            this.hostAddress = InetAddress.getByName(hostAddress);
+            this.port = port;
+            if (ni != null)
+                this.socket.setOption(StandardSocketOptions.IP_MULTICAST_IF, ni);
         } catch (IOException e) {
             this.logger.error("Multicast socket cannot join group with : [port : {}, host : {}]", port, hostAddress);
             startFlag = false;
@@ -53,17 +64,19 @@ public abstract class UDPMulticastTransmitter extends AbstractLoopThreadCafe {
     @Override
     protected void loop() {
         try {
-            byte[] buf = new byte[this.socket.getSendBufferSize()];
-            final DatagramPacket packet = new DatagramPacket(buf, buf.length);
-            this.socket.send(packet);
-            final byte[] packetData = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
-            this.onReceive(packetData);
+            if (this.waitingSend) {
+                this.socket.setSendBufferSize(this.sendBuf.length);
+                final DatagramPacket packet = new DatagramPacket(this.sendBuf, this.sendBuf.length, this.hostAddress, this.port);
+                this.socket.send(packet);
+            }
+            this.waitingSend = false;
         } catch (SocketTimeoutException exception) {
             this.logger.warn("UDP multicast could not receive in {} milliseconds", this.getTimeout());
         } catch (IOException e) {
             this.logger.error("UDP multicast could not receive with IOException");
         } catch (Exception e) {
-            this.logger.error("Unknown error occurred");
+            e.printStackTrace();
+            Main.exit(1);
         }
     }
 
@@ -80,13 +93,25 @@ public abstract class UDPMulticastTransmitter extends AbstractLoopThreadCafe {
             try {
                 this.socket.setSoTimeout(timeout);
             } catch (SocketException e) {
-                this.logger.warn("Receiver timeout couldn't set : {} milliseconds", timeout);
+                this.logger.warn("Transmitter timeout couldn't set : {} milliseconds", timeout);
             }
+        }
+
+        try {
+            this.socket.setOption(StandardSocketOptions.IP_MULTICAST_LOOP, (Boolean)false);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
     // millisecond
     protected abstract int getTimeout();
 
-    protected abstract void onReceive(final byte[] data);
+    protected void setTransmitData(final byte[] data) {
+        if (this.waitingSend) return;
+        this.sendBuf = Arrays.copyOfRange(data, 0, data.length);;
+        this.waitingSend = true;
+    }
+
+    public abstract void sendCommand(@Nonnull List<SendCommand> commandList);
 }

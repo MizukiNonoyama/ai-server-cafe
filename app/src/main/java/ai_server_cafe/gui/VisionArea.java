@@ -1,6 +1,6 @@
 package ai_server_cafe.gui;
 
-import ai_server_cafe.config.Config;
+import ai_server_cafe.config.ConfigManager;
 import ai_server_cafe.gui.interfaces.AbstractPanelCafe;
 import ai_server_cafe.model.Field;
 import ai_server_cafe.updater.WorldUpdater;
@@ -32,6 +32,11 @@ public class VisionArea extends AbstractPanelCafe {
 
     @Override
     public boolean isVisibleConfig() {
-        return Config.getInstance().isVisibleVision();
+        return ConfigManager.getInstance().getConfig().isVisionAreaVisible;
+    }
+
+    @Override
+    public void onResize(int newX, int newY) {
+
     }
 }

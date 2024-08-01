@@ -1,6 +1,5 @@
 package ai_server_cafe.gui;
 
-import ai_server_cafe.config.Config;
 import ai_server_cafe.gui.interfaces.IContainerCafe;
 import ai_server_cafe.gui.interfaces.IGraphicalComponent;
 import ai_server_cafe.util.interfaces.IFunction;
@@ -106,5 +105,10 @@ public class GameWindow extends JFrame {
 
     public void onResize(int newWidth, int newHeight) {
         this.logger.info("{}, {}", newWidth, newHeight);
+        for (Map.Entry<Class<? extends IContainerCafe>, Component> entry : this.componentMap.entrySet()) {
+            if (entry.getValue() instanceof IContainerCafe) {
+                ((IContainerCafe)entry.getValue()).onResize(newWidth, newHeight);
+            }
+        }
     }
 }

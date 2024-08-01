@@ -3,6 +3,8 @@
 
 # Ignore Gradle build output directory
 build
+app/config
+app/bin
 
 # Ignore IDE profiles 
 eclipse

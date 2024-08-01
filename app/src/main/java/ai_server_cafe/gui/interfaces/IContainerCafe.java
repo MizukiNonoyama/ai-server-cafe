@@ -13,4 +13,6 @@ public interface IContainerCafe {
      * set action contents. should be called at init.
       */
     public void addActionContents(List<Component> component);
+
+    public void onResize(int newX, int newY);
 }

@@ -17,10 +17,15 @@ public final class VisionReceiver extends UDPMulticastReceiver {
     }
 
     @Override
+    protected double dataStockingTime() {
+        return 1.0;
+    }
+
+    @Override
     protected void onReceive(final byte[] data) {
         try {
             VisionWrapper.Packet packet = VisionWrapper.Packet.parseFrom(data);
-            WorldUpdater.getInstance().update(packet);
+            WorldUpdater.getInstance().update(packet, this.receivedData.size());
         } catch (InvalidProtocolBufferException e) {
             this.logger.warn("Received packet could not parse with an error at {}", this.name);
         }

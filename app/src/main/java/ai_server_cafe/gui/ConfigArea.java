@@ -22,4 +22,9 @@ public class ConfigArea extends AbstractPanelCafe {
     public boolean isVisibleConfig() {
         return true;
     }
+
+    @Override
+    public void onResize(int newX, int newY) {
+
+    }
 }

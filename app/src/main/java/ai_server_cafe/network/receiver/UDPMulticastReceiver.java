@@ -1,13 +1,19 @@
 package ai_server_cafe.network.receiver;
 
+import ai_server_cafe.util.TimeHelper;
+import ai_server_cafe.util.interfaces.ReceivedData;
 import ai_server_cafe.util.thread.AbstractLoopThreadCafe;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Deque;
 
 public abstract class UDPMulticastReceiver extends AbstractLoopThreadCafe {
     private MulticastSocket socket = null;
+
+    protected Deque<ReceivedData> receivedData;
 
     protected UDPMulticastReceiver(String name) {
         super(name);
@@ -34,8 +40,8 @@ public abstract class UDPMulticastReceiver extends AbstractLoopThreadCafe {
         }
         if(!interfaceAddress.isEmpty()) {
             try {
-                ni = NetworkInterface.getByName(interfaceAddress);
-            } catch (SocketException e) {
+                ni = NetworkInterface.getByInetAddress(InetAddress.getByName(interfaceAddress));
+            } catch (SocketException | UnknownHostException e) {
                 this.logger.error("Interface address [%s] is not exist", interfaceAddress);
                 startFlag = false;
             }
@@ -57,6 +63,10 @@ public abstract class UDPMulticastReceiver extends AbstractLoopThreadCafe {
             final DatagramPacket packet = new DatagramPacket(buf, buf.length);
             this.socket.receive(packet);
             final byte[] packetData = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
+            this.receivedData.push(new ReceivedData(packetData, TimeHelper.now()));
+            while (TimeHelper.now() - this.receivedData.getFirst().receivedTime > this.dataStockingTime()) {
+                this.receivedData.removeFirst();
+            }
             this.onReceive(packetData);
         } catch (SocketTimeoutException exception) {
             this.logger.warn("UDP multicast could not receive in {} milliseconds", this.getTimeout());
@@ -76,6 +86,7 @@ public abstract class UDPMulticastReceiver extends AbstractLoopThreadCafe {
     @Override
     protected void init() {
         int timeout = this.getTimeout();
+        this.receivedData = new ArrayDeque<>();
         if (timeout > 0) {
             try {
                 this.socket.setSoTimeout(timeout);
@@ -87,6 +98,8 @@ public abstract class UDPMulticastReceiver extends AbstractLoopThreadCafe {
 
     // millisecond
     protected abstract int getTimeout();
+
+    protected abstract double dataStockingTime();
 
     protected abstract void onReceive(final byte[] data);
 }
