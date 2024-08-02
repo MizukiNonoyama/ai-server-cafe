@@ -1,6 +1,7 @@
 package ai_server_cafe.gui;
 
 import ai_server_cafe.Main;
+import ai_server_cafe.config.Config;
 import ai_server_cafe.config.ConfigManager;
 import ai_server_cafe.gui.interfaces.IContainerCafe;
 import ai_server_cafe.gui.interfaces.IGraphicalComponent;
@@ -88,7 +89,8 @@ public final class GuiThread extends AbstractLoopThreadCafe {
     @Override
     protected void loop() {
         double nowDate = TimeHelper.now();
-        if (nowDate - lastDate >= ConfigManager.GRAPHIC_CYCLE) {
+        Config config = ConfigManager.getInstance().getConfig();
+        if (nowDate - lastDate >= config.getFrameTime()) {
             synchronized (this) {
                 for (Map.Entry<Class<? extends IContainerCafe>, LinkedHashMap<String, IGraphicalComponent>> entry : this.graphicalComponentsMap.entrySet()) {
                     List<IGraphicalComponent> list = new ArrayList<>(entry.getValue().values());

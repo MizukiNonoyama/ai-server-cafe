@@ -1,9 +1,12 @@
 package ai_server_cafe.game;
 
 import ai_server_cafe.Main;
+import ai_server_cafe.config.Config;
 import ai_server_cafe.config.ConfigManager;
-import ai_server_cafe.network.transmitter.GrSimTransmitter;
-import ai_server_cafe.network.transmitter.KIKSTransmitter;
+import ai_server_cafe.model.Command;
+import ai_server_cafe.network.transmitter.AbstractTransmitter;
+import ai_server_cafe.network.transmitter.RobotDriver;
+import ai_server_cafe.network.transmitter.TransmitterManager;
 import ai_server_cafe.updater.WorldUpdater;
 import ai_server_cafe.util.EnumKickType;
 import ai_server_cafe.util.SendCommand;
@@ -12,7 +15,9 @@ import ai_server_cafe.util.TimeHelper;
 import ai_server_cafe.util.thread.AbstractLoopThreadCafe;
 import org.apache.commons.math3.util.Pair;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public final class GameThread extends AbstractLoopThreadCafe {
     private static GameThread instance = null;
@@ -31,10 +36,19 @@ public final class GameThread extends AbstractLoopThreadCafe {
     @Override
     protected void loop() {
         double nowDate = TimeHelper.now();
-        if (nowDate - lastDate >= ConfigManager.CYCLE) {
+        ConfigManager configManager = ConfigManager.getInstance();
+        Config config = configManager.getConfig();
+        if (nowDate - lastDate >= config.getCycleTime()) {
+            //this.logger.info(nowDate - this.lastDate);
             try {
-                SendCommand command = new SendCommand(10, TeamColor.BLUE, new Pair<EnumKickType, Integer>(EnumKickType.NONE, 0), 0, 0, 0,0);
-                KIKSTransmitter.getInstance().sendCommand(Arrays.asList(new SendCommand[] {command}));
+                List<SendCommand> commands = new ArrayList<>();
+                if (configManager.isStart()) {
+                    // Captain etc.
+                } else {
+                    commands.addAll(getHaltCommands(config.getTeamColor(), config.activeRobots));
+                }
+                for(SendCommand command : commands)
+                    RobotDriver.getInstance().updateCommand(command.getId(), command.getColor(), new Command());
             } catch(Exception e) {
                 e.printStackTrace();
                 Main.exit(1);
@@ -58,5 +72,13 @@ public final class GameThread extends AbstractLoopThreadCafe {
 
     synchronized public double getSystemStartedTime() {
         return this.systemStartedTime;
+    }
+
+    public static List<SendCommand> getHaltCommands(TeamColor color, int[] activeRobots) {
+        List<SendCommand> commandList = new ArrayList<>();
+        for (int id : activeRobots) {
+            commandList.add(new SendCommand(id, color, new Pair<EnumKickType, Integer>(EnumKickType.NONE, 0), 0, 0, 0,0));
+        }
+        return commandList;
     }
 }

@@ -22,6 +22,8 @@ public class Config {
     public boolean isStart;
     public double fps;
     public double cyclePS;
+    public double sendPS;
+    public int[] radioTypes;
 
     public Config() {
         this.isVisionAreaVisible = true;
@@ -43,5 +45,23 @@ public class Config {
         this.isStart = false;
         this.fps = 60.0;
         this.cyclePS = 60.0;
+        this.sendPS = 60.0;
+        this.radioTypes = new int[] {1};
+    }
+
+    public TeamColor getTeamColor() {
+        return TeamColor.getColor(this.teamColor);
+    }
+
+    public double getSendCycleTime() {
+        return 1.0 / this.sendPS;
+    }
+
+    public double getCycleTime() {
+        return 1.0 / this.cyclePS;
+    }
+
+    public double getFrameTime() {
+        return 1.0 / this.fps;
     }
 }

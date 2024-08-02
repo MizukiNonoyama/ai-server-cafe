@@ -1,16 +1,12 @@
 package ai_server_cafe.network.transmitter;
 
 import ai_server_cafe.Main;
-import ai_server_cafe.util.SendCommand;
-import ai_server_cafe.util.thread.AbstractLoopThreadCafe;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.net.*;
 import java.util.Arrays;
-import java.util.List;
 
-public abstract class UDPMulticastTransmitter extends AbstractLoopThreadCafe {
+public abstract class UDPMulticastTransmitter extends AbstractTransmitter {
     protected MulticastSocket socket = null;
     private byte[] sendBuf;
     private boolean waitingSend;
@@ -19,11 +15,8 @@ public abstract class UDPMulticastTransmitter extends AbstractLoopThreadCafe {
 
     protected UDPMulticastTransmitter(String name) {
         super(name);
+        this.waitingSend = false;
     }
-
-    @Override
-    @Deprecated
-    public void start() {}
 
     public void startWith(int port, String hostAddress, String interfaceAddress) {
         boolean startFlag = true;
@@ -57,12 +50,12 @@ public abstract class UDPMulticastTransmitter extends AbstractLoopThreadCafe {
             this.logger.error("Multicast socket cannot join group with : [port : {}, host : {}]", port, hostAddress);
             startFlag = false;
         }
-        if(startFlag) super.start();
+        if(startFlag) super.startWith(port, hostAddress, interfaceAddress);
         else this.logger.warn("This thread will not start with error");
     }
 
     @Override
-    protected void loop() {
+    synchronized protected void loop() {
         try {
             if (this.waitingSend) {
                 this.socket.setSendBufferSize(this.sendBuf.length);
@@ -81,8 +74,8 @@ public abstract class UDPMulticastTransmitter extends AbstractLoopThreadCafe {
     }
 
     @Override
-    protected void onTerminate() {
-        this.socket.close();
+    synchronized protected void onTerminate() {
+        if (this.socket != null) this.socket.close();
         super.onTerminate();
     }
 
@@ -112,6 +105,4 @@ public abstract class UDPMulticastTransmitter extends AbstractLoopThreadCafe {
         this.sendBuf = Arrays.copyOfRange(data, 0, data.length);;
         this.waitingSend = true;
     }
-
-    public abstract void sendCommand(@Nonnull List<SendCommand> commandList);
 }

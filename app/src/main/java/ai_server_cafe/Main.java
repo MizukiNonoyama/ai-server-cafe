@@ -7,6 +7,8 @@ import ai_server_cafe.gui.GuiThread;
 import ai_server_cafe.network.receiver.VisionReceiver;
 import ai_server_cafe.network.transmitter.GrSimTransmitter;
 import ai_server_cafe.network.transmitter.KIKSTransmitter;
+import ai_server_cafe.network.transmitter.RobotDriver;
+import ai_server_cafe.network.transmitter.TransmitterManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,9 +20,9 @@ public class Main {
 	public static void main(String[] args) {
 		Config config = ConfigManager.getInstance().getConfig();
 		VisionReceiver.getInstance().startWith(config.visionPort, config.visionAddress, config.visionInterfaceAddress);
-		GrSimTransmitter.getInstance().startWith(config.grSimPort, config.grSimAddress, config.grSimInterfaceAddress);
-		KIKSTransmitter.getInstance().startWith(config.transmitterPort, config.transmitterAddress, config.transmitterInterfaceAddress);
+		TransmitterManager.getInstance().setTransmitters(config.radioTypes);
 		GuiThread.getInstance().start();
+		RobotDriver.getInstance().start();
 		GuiThread.getInstance().setVisible(true);
 		GameThread.getInstance().start();
     }
@@ -31,6 +33,7 @@ public class Main {
 		GameThread.getInstance().terminate();
 		GrSimTransmitter.getInstance().terminate();
 		KIKSTransmitter.getInstance().terminate();
+		RobotDriver.getInstance().terminate();
 		ConfigManager.getInstance().save();
         try {
             Thread.sleep(30);

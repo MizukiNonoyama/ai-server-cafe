@@ -11,11 +11,10 @@ import java.io.*;
 
 public class ConfigManager {
     private static ConfigManager instance = null;
-    public static final double CYCLE = 1.0 / 60.0;
-    public static final double GRAPHIC_CYCLE = 1.0 / 60.0;
     private Config config;
+    private boolean start = false;
     private boolean isDirty = false;
-    private Logger logger = LogManager.getLogger("config manager");
+    private final Logger logger = LogManager.getLogger("config manager");
 
     private ConfigManager() {
         this.load();
@@ -85,5 +84,13 @@ public class ConfigManager {
             this.load();
         }
         return this.config;
+    }
+
+    synchronized public boolean isStart() {
+        return this.start;
+    }
+
+    synchronized public void setStart(boolean value) {
+        this.start = value;
     }
 }
