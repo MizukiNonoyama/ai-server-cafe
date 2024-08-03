@@ -42,7 +42,7 @@ public final class RobotDriver extends AbstractLoopThreadCafe {
                 // WorldUpdater -> IntegratedRobot && !isLost && containsActiveRobots
                 // Controller
                 // SendCommand
-                SendCommand sendCommand = new SendCommand(0, TeamColor.BLUE, new Pair<>(EnumKickType.CHIP, 100),5,100,100,0);
+                SendCommand sendCommand = new SendCommand(10, TeamColor.BLUE, new Pair<>(EnumKickType.CHIP, 100),5,100,100,0);
                 for (AbstractTransmitter at : TransmitterManager.getInstance().getTransmitters()) {
                     at.sendCommand(sendCommand);
                 }

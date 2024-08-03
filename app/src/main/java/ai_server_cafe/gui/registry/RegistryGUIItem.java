@@ -12,6 +12,7 @@ import ai_server_cafe.gui.item.CircleCafe;
 import ai_server_cafe.gui.item.LineCafe;
 import ai_server_cafe.gui.item.RectCafe;
 import ai_server_cafe.model.Field;
+import ai_server_cafe.model.RawBall;
 import ai_server_cafe.updater.WorldUpdater;
 import ai_server_cafe.util.TeamColor;
 import ai_server_cafe.util.gui.ColorHelper;
@@ -70,6 +71,8 @@ public class RegistryGUIItem {
         components.add(new RectCafe("oppositePenalty", field.getGameWidth() / 2.0 - field.getPenaltyLength(), -field.getPenaltyWidth() / 2.0, field.getPenaltyLength(), field.getPenaltyWidth(), ColorHelper.LINE_WHITE, 4.0F));
         components.add(new RectCafe("ourGoal", -field.getGameWidth() / 2.0 - field.getGoalLength(), -field.getGoalWidth() / 2.0, field.getGoalLength(), field.getGoalWidth(), ColorHelper.LINE_WHITE, 4.0F));
         components.add(new RectCafe("oppositeGoal", field.getGameWidth() / 2.0, -field.getGoalWidth() / 2.0, field.getGoalLength(), field.getGoalWidth(), ColorHelper.LINE_WHITE, 4.0F));
+
+        components.add(new CircleCafe("ball", ColorHelper.BALL_ORANGE, 0.0, 0.0, 21, true, 4.0F));
 
         GuiThread.getInstance().addAllGraphicalComponents(VisionArea.class, components);
     }

@@ -92,6 +92,8 @@ public final class GuiThread extends AbstractLoopThreadCafe {
         Config config = ConfigManager.getInstance().getConfig();
         if (nowDate - lastDate >= config.getFrameTime()) {
             synchronized (this) {
+                // GUI Items
+
                 for (Map.Entry<Class<? extends IContainerCafe>, LinkedHashMap<String, IGraphicalComponent>> entry : this.graphicalComponentsMap.entrySet()) {
                     List<IGraphicalComponent> list = new ArrayList<>(entry.getValue().values());
                     this.window.setGraphicalComponents(list , entry.getKey());
