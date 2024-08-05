@@ -1,7 +1,7 @@
 package ai_server_cafe.network.transmitter;
 
 import ai_server_cafe.network.radio.EnumRadioType;
-import ai_server_cafe.util.SendCommand;
+import ai_server_cafe.model.SendCommand;
 import ai_server_cafe.util.thread.AbstractLoopThreadCafe;
 
 import javax.annotation.Nonnull;

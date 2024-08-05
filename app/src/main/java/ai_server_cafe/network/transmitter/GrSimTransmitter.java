@@ -4,7 +4,7 @@ import ai_server_cafe.network.proto.ssl.grsim.GrsimCommand;
 import ai_server_cafe.network.proto.ssl.grsim.GrsimPacket;
 import ai_server_cafe.network.radio.EnumRadioType;
 import ai_server_cafe.util.EnumKickType;
-import ai_server_cafe.util.SendCommand;
+import ai_server_cafe.model.SendCommand;
 import ai_server_cafe.util.TeamColor;
 import ai_server_cafe.util.TimeHelper;
 import ai_server_cafe.util.math.KickConverter;

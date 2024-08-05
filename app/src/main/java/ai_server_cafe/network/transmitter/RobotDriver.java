@@ -4,16 +4,14 @@ import ai_server_cafe.config.Config;
 import ai_server_cafe.config.ConfigManager;
 import ai_server_cafe.model.Command;
 import ai_server_cafe.model.IntegratedCommand;
-import ai_server_cafe.model.IntegratedRobot;
 import ai_server_cafe.util.EnumKickType;
-import ai_server_cafe.util.SendCommand;
+import ai_server_cafe.model.SendCommand;
 import ai_server_cafe.util.TeamColor;
 import ai_server_cafe.util.TimeHelper;
 import ai_server_cafe.util.thread.AbstractLoopThreadCafe;
 import org.apache.commons.math3.util.Pair;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public final class RobotDriver extends AbstractLoopThreadCafe {

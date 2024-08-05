@@ -11,7 +11,10 @@ import ai_server_cafe.util.TimeHelper;
 import ai_server_cafe.util.interfaces.IFunction;
 import ai_server_cafe.util.thread.AbstractLoopThreadCafe;
 import com.google.gson.Gson;
+import org.apache.commons.math3.util.Pair;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.sql.Time;
 import java.util.*;
 import java.util.List;
@@ -44,7 +47,7 @@ public final class GuiThread extends AbstractLoopThreadCafe {
         this.isVisible = value;
     }
 
-    synchronized public void setGraphicalComponents(Class<? extends IContainerCafe> parent, List<IGraphicalComponent> components) {
+    synchronized public void setGraphicalComponents(Class<? extends IContainerCafe> parent, @Nonnull List<IGraphicalComponent> components) {
         this.graphicalComponentsMap.put(parent, new LinkedHashMap<>());
         for(IGraphicalComponent component : components) {
             this.graphicalComponentsMap.get(parent).put(component.getId(), component);
@@ -93,6 +96,13 @@ public final class GuiThread extends AbstractLoopThreadCafe {
         if (nowDate - lastDate >= config.getFrameTime()) {
             synchronized (this) {
                 // GUI Items
+                List<Pair<Class<? extends IContainerCafe>, IGraphicalComponent>> components = RegistryGUIItem.updateDynamicGraphicalContents(new ArrayList<>());
+                for (Pair<Class<? extends IContainerCafe>, IGraphicalComponent> pair : components) {
+                    if (!this.graphicalComponentsMap.containsKey(pair.getKey())) {
+                        this.graphicalComponentsMap.put(pair.getKey(), new LinkedHashMap<>());
+                    }
+                    this.graphicalComponentsMap.get(pair.getKey()).put(pair.getValue().getId(), pair.getValue());
+                }
 
                 for (Map.Entry<Class<? extends IContainerCafe>, LinkedHashMap<String, IGraphicalComponent>> entry : this.graphicalComponentsMap.entrySet()) {
                     List<IGraphicalComponent> list = new ArrayList<>(entry.getValue().values());
@@ -110,7 +120,8 @@ public final class GuiThread extends AbstractLoopThreadCafe {
 
         IFunction<Void> onExit = new IFunction<Void>() {
             @Override
-            public Void function(Object... args) {
+            @Nonnull
+            public Void function(@Nullable Object... args) {
                 Main.exit(0);
                 return null;
             }

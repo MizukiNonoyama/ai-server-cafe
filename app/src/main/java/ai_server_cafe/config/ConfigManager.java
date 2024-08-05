@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 
-public class ConfigManager {
+public final class ConfigManager {
     private static ConfigManager instance = null;
     private Config config;
     private boolean start = false;

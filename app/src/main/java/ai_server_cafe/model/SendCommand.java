@@ -1,15 +1,21 @@
-package ai_server_cafe.util;
+package ai_server_cafe.model;
 
+import ai_server_cafe.util.EnumKickType;
+import ai_server_cafe.util.TeamColor;
 import org.apache.commons.math3.util.Pair;
 
+
+/**
+ * 送信コマンド ロボット基準
+ */
 public class SendCommand {
-    private final int id;
-    private final TeamColor color;
-    private final Pair<EnumKickType, Integer> kickFlag;
-    private final int dribble;
-    private final double vx;
-    private final double vy;
-    private final double omega;
+    protected final int id;
+    protected final TeamColor color;
+    protected final Pair<EnumKickType, Integer> kickFlag;
+    protected final int dribble;
+    protected final double vx;
+    protected final double vy;
+    protected final double omega;
 
     public SendCommand(int id, TeamColor color, Pair<EnumKickType, Integer> kickFlag, int dribble, double vx, double vy, double omega) {
         this.id = id;
