@@ -4,19 +4,16 @@ import ai_server_cafe.Main;
 import ai_server_cafe.config.Config;
 import ai_server_cafe.config.ConfigManager;
 import ai_server_cafe.model.Command;
-import ai_server_cafe.network.transmitter.AbstractTransmitter;
+import ai_server_cafe.model.IntegratedCommand;
 import ai_server_cafe.network.transmitter.RobotDriver;
-import ai_server_cafe.network.transmitter.TransmitterManager;
-import ai_server_cafe.updater.WorldUpdater;
 import ai_server_cafe.util.EnumKickType;
-import ai_server_cafe.util.SendCommand;
+import ai_server_cafe.model.SendCommand;
 import ai_server_cafe.util.TeamColor;
 import ai_server_cafe.util.TimeHelper;
 import ai_server_cafe.util.thread.AbstractLoopThreadCafe;
 import org.apache.commons.math3.util.Pair;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public final class GameThread extends AbstractLoopThreadCafe {

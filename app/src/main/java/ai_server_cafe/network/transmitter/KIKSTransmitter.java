@@ -1,11 +1,7 @@
 package ai_server_cafe.network.transmitter;
 
-import ai_server_cafe.network.proto.kiks.AiCommandOuterClass;
-import ai_server_cafe.network.proto.ssl.grsim.GrsimCommand;
-import ai_server_cafe.network.proto.ssl.grsim.GrsimPacket;
 import ai_server_cafe.network.radio.EnumRadioType;
-import ai_server_cafe.util.SendCommand;
-import ai_server_cafe.util.TimeHelper;
+import ai_server_cafe.model.SendCommand;
 import ai_server_cafe.util.math.MathHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,7 +10,6 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.SocketException;
-import java.util.ArrayList;
 import java.util.List;
 
 public final class KIKSTransmitter extends UDPMulticastTransmitter {

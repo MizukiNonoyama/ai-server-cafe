@@ -3,15 +3,15 @@ package ai_server_cafe.model;
 import ai_server_cafe.util.TeamColor;
 
 public class IntegratedRobot {
-    private Command command;
+    private final Command command;
     private final int id;
     private final TeamColor color;
     private FilteredRobot robot;
 
-    public IntegratedRobot(int id, TeamColor color, FilteredRobot robot) {
+    public IntegratedRobot(int id, TeamColor color, FilteredRobot robot, Command command) {
         this.id = id;
         this.color = color;
-        this.command = new Command();
+        this.command = command;
         this.robot = robot;
     }
 
@@ -27,11 +27,7 @@ public class IntegratedRobot {
         this.robot = robot;
     }
 
-    public void setCommand(Command command) {
-        this.command = command;
-    }
-
     public Command getCommand() {
-        return this.command;
+        return this.command.clone();
     }
 }
