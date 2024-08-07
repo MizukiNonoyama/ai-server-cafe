@@ -14,8 +14,7 @@ import ai_server_cafe.gui.item.LineCafe;
 import ai_server_cafe.gui.item.NoneCafe;
 import ai_server_cafe.gui.item.RectCafe;
 import ai_server_cafe.model.Field;
-import ai_server_cafe.model.RawBall;
-import ai_server_cafe.updater.WorldUpdater;
+import ai_server_cafe.updater.UpdaterWorld;
 import ai_server_cafe.util.TeamColor;
 import ai_server_cafe.util.gui.ColorHelper;
 import ai_server_cafe.util.interfaces.IFunction;
@@ -67,7 +66,7 @@ public class RegistryGUIItem {
     public static void registerGraphicalContents() {
         // Init draw
         // LinkedHashMapを使っているので登録順に表示される component idを予めここで定義しておく Backgroundに表示するものは中身も書いておいてよい
-        Field field = WorldUpdater.getInstance().getField();
+        Field field = UpdaterWorld.getInstance().getField();
         List<IGraphicalComponent> components = new ArrayList<>();
         components.add(new RectCafe("background", -field.getCarpetWidth() / 2.0, -field.getCarpetHeight() / 2.0, field.getCarpetWidth(), field.getCarpetHeight(), ColorHelper.SCREEN_BLACK));
         components.add(new LineCafe("goalToGoalLine", -field.getGameWidth() / 2.0, 0.0, field.getGameWidth() / 2.0, 0.0, ColorHelper.LINE_WHITE, 4.0F));
@@ -88,9 +87,9 @@ public class RegistryGUIItem {
     // Call from GUI thread
     @Nonnull
     public static List<Pair<Class<? extends IContainerCafe>, IGraphicalComponent>> updateDynamicGraphicalContents(@Nonnull List<Pair<Class<? extends IContainerCafe>, IGraphicalComponent>> components) {
-        WorldUpdater updater = WorldUpdater.getInstance();
-        components.add(new Pair(VisionArea.class, updater.getRawBallList().isEmpty() ? new NoneCafe("ball", ColorHelper.BALL_ORANGE) :
-                new CircleCafe("ball", ColorHelper.BALL_ORANGE, updater.getRawBallList().get(0).getX(), updater.getRawBallList().get(0).getY(), 21, true, 4.0F)));
+        UpdaterWorld updater = UpdaterWorld.getInstance();
+        components.add(new Pair(VisionArea.class,
+                new CircleCafe("ball", ColorHelper.BALL_ORANGE, updater.getBall().getX(), updater.getBall().getY(), 21, true, 4.0F)));
         return components;
     }
 

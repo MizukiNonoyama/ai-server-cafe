@@ -9,6 +9,32 @@ public class FilteredRobot extends AbstractFilteredObject<RawRobot> {
     protected Optional<IFunction<Optional<FilteredRobot>>> estimator;
 
     public FilteredRobot() {
+        super();
+        this.estimator = Optional.empty();
+    }
+
+    @Override
+    public FilteredRobot copy() {
+        FilteredRobot fr = new FilteredRobot();
+        fr.estimator = this.estimator;
+        fr.lost = this.lost;
+        fr.x = this.x;
+        fr.y = this.y;
+        fr.z = this.z;
+        fr.vx = this.vx;
+        fr.vy = this.vy;
+        fr.vz = this.vz;
+        fr.ax = this.ax;
+        fr.ay = this.ay;
+        fr.az = this.az;
+        fr.jx = this.jx;
+        fr.jy = this.jy;
+        fr.jz = this.jz;
+        fr.theta = this.theta;
+        fr.omega = this.omega;
+        fr.alpha = this.alpha;
+        fr.zeta = this.zeta;
+        return fr;
     }
 
     public FilteredRobot(@Nonnull RawRobot rawRobot) {

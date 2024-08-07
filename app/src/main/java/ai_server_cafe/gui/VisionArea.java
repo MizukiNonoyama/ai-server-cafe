@@ -3,7 +3,7 @@ package ai_server_cafe.gui;
 import ai_server_cafe.config.ConfigManager;
 import ai_server_cafe.gui.interfaces.AbstractPanelCafe;
 import ai_server_cafe.model.Field;
-import ai_server_cafe.updater.WorldUpdater;
+import ai_server_cafe.updater.UpdaterWorld;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 
@@ -17,7 +17,7 @@ public class VisionArea extends AbstractPanelCafe {
 
     @Override
     public void initPaint(Graphics2D graphics2D) {
-        Field field = WorldUpdater.getInstance().getField();
+        Field field = UpdaterWorld.getInstance().getField();
         double drawMaxWidth = field.getCarpetWidth();
         double drawMaxHeight = field.getCarpetHeight();
         this.isRotated = this.getWidth() < this.getHeight();

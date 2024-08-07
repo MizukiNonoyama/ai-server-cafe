@@ -17,6 +17,7 @@ public abstract class AbstractLoopThreadCafe extends AbstractThreadCafe {
                 this.loop();
             } catch (Exception exception) {
                 this.logger.error("Unknown error occurred on loop function");
+                exception.printStackTrace();
             }
         }
         this.logger.info("Thread {} is successfully terminated", this.name);

@@ -7,12 +7,11 @@ import ai_server_cafe.model.RawRobot;
 import ai_server_cafe.util.interfaces.IFunction;
 import ai_server_cafe.util.math.MathHelper;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
-import org.checkerframework.checker.units.qual.N;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
@@ -23,13 +22,13 @@ public class FilterFreeRobot extends AbstractFilterSame<FilteredRobot, RawRobot>
     private double prevObserveTime;
     // 更新がなければ前回の値
     private Optional<FilteredRobot> robot;
-    private LinerSystem.Observation observation;
+    private final LinerSystem.Observation observation;
     private Estimation estimation;
 
     public FilterFreeRobot(double lostDuration) {
         this.lostDuration = lostDuration;
         this.observation = new LinerSystem.Observation(6, 3, MathHelper.makeIdentity(6, 3),
-                MathHelper.makeVectorMatrix(new double[] {Probability.toVariance(5.0), Probability.toVariance(5.0),
+                MathHelper.makeDiagonal(new double[] {Probability.toVariance(5.0), Probability.toVariance(5.0),
                 Probability.toVariance(Math.toRadians(5.0))}));
         this.prevTime = 0.0;
         this.prevObserveTime = 0.0;
@@ -50,7 +49,7 @@ public class FilterFreeRobot extends AbstractFilterSame<FilteredRobot, RawRobot>
                 Vector3D r = new Vector3D(stateData[0], stateData[1], stateData[2]);
                 Vector3D v = new Vector3D(stateData[3], stateData[4], stateData[5]);
                 double nextTheta = r.getZ() + dt * v.getZ();
-                Rotation rot = new Rotation(MathHelper.AXIS_Z, nextTheta);
+                Rotation rot = new Rotation(MathHelper.AXIS_Z, nextTheta, RotationConvention.VECTOR_OPERATOR);
                 r = r.add(rot.applyTo(v.scalarMultiply(dt)));
                 return MathHelper.makeVectorMatrix(new double[] {r.getX(), r.getY(), r.getZ(), v.getX(), v.getY(), v.getZ()});
             }
@@ -81,7 +80,7 @@ public class FilterFreeRobot extends AbstractFilterSame<FilteredRobot, RawRobot>
         RealMatrix result = MathHelper.makeIdentity(state.getRowDimension(), state.getRowDimension());
         // θ+dθ=θ+dt*ω
         double nextTheta = r.getZ() + dt * v.getZ();
-        Rotation rot = new Rotation(MathHelper.AXIS_Z, nextTheta);
+        Rotation rot = new Rotation(MathHelper.AXIS_Z, nextTheta, RotationConvention.VECTOR_OPERATOR);
         RealMatrix rotMatrix = MatrixUtils.createRealMatrix(rot.getMatrix());
         // I  dt*Rot(θ+dt*ω)
         // O               I
@@ -90,7 +89,7 @@ public class FilterFreeRobot extends AbstractFilterSame<FilteredRobot, RawRobot>
                 result.setEntry(i, j + 3, dt * rotMatrix.getEntry(i, j));
             }
         }
-        Rotation rot1 = new Rotation(MathHelper.AXIS_Z, nextTheta + MathHelper.HALF_PI);
+        Rotation rot1 = new Rotation(MathHelper.AXIS_Z, nextTheta + MathHelper.HALF_PI, RotationConvention.VECTOR_OPERATOR);
         // 回転行列の微分による項
         // d(p_xy+Rot(θ+dt*ω)*dt*v_xy)/dω=dt^2*Rot(θ+dt*ω+π/2)*v_xy
         Vector3D rotated = rot1.applyTo(v.scalarMultiply(dt * dt));
@@ -134,7 +133,7 @@ public class FilterFreeRobot extends AbstractFilterSame<FilteredRobot, RawRobot>
         double dt = updateTime - prevTime;
         // 非常に短い間隔でupdateが呼び出されたら直前の値を返す
         // (ゼロ除算の原因になるので)
-        if (Math.abs(dt) < Double.MIN_VALUE) {
+        if (MathHelper.isEpsilon(dt)) {
             return this.robot;
         }
 
@@ -175,7 +174,7 @@ public class FilterFreeRobot extends AbstractFilterSame<FilteredRobot, RawRobot>
 
         // 結果
         double[] s = this.estimation.getState().getColumn(0);
-        Vector3D vField = (new Rotation(MathHelper.AXIS_Z, s[2])).applyTo(
+        Vector3D vField = (new Rotation(MathHelper.AXIS_Z, s[2], RotationConvention.VECTOR_OPERATOR)).applyTo(
                 new Vector3D(s[3], s[4], s[5])
         );
         FilteredRobot r = getFilteredRobot(s, vField);
@@ -206,7 +205,7 @@ public class FilterFreeRobot extends AbstractFilterSame<FilteredRobot, RawRobot>
                 // 位置: フィールド基準
                 Vector3D rawP = fr.positionXYTheta();
                 // 速度: ロボット基準
-                Vector3D rawV = (new Rotation(MathHelper.AXIS_Z, -fr.getTheta())).applyTo(fr.velocityXYTheta());
+                Vector3D rawV = (new Rotation(MathHelper.AXIS_Z, -fr.getTheta(), RotationConvention.VECTOR_OPERATOR)).applyTo(fr.velocityXYTheta());
                 // 惰性で動いていると仮定
                 // 正確に予測するため、積分をつかって計算
                 // x, y
@@ -214,7 +213,7 @@ public class FilterFreeRobot extends AbstractFilterSame<FilteredRobot, RawRobot>
                 double y = rawP.getY();
                 double theta = rawP.getZ();
                 Vector2D raw2v = new Vector2D(rawV.getX(), rawV.getY());
-                if (Math.abs(rawV.getZ()) < Double.MIN_VALUE) {
+                if (MathHelper.isEpsilon(rawV.getZ())) {
                     // 回転がなければそのままフィールド基準に変換して足し合わせる
                     x += t * MathHelper.applyRotation2D(raw2v, theta).getX();
                     y += t * MathHelper.applyRotation2D(raw2v, theta).getY();
@@ -233,7 +232,7 @@ public class FilterFreeRobot extends AbstractFilterSame<FilteredRobot, RawRobot>
                 theta = MathHelper.wrapPI(theta);
 
                 // フィールド基準の速度
-                Vector3D v_field1 = (new Rotation(MathHelper.AXIS_Z, theta)).applyTo(rawV);
+                Vector3D v_field1 = (new Rotation(MathHelper.AXIS_Z, theta, RotationConvention.VECTOR_OPERATOR)).applyTo(rawV);
 
                 // 返り値
                 FilteredRobot result = new FilteredRobot();

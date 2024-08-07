@@ -1,7 +1,7 @@
 package ai_server_cafe.network.receiver;
 
 import ai_server_cafe.network.proto.ssl.vision.VisionWrapper;
-import ai_server_cafe.updater.WorldUpdater;
+import ai_server_cafe.updater.UpdaterWorld;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 public final class VisionReceiver extends UDPMulticastReceiver {
@@ -25,7 +25,7 @@ public final class VisionReceiver extends UDPMulticastReceiver {
     protected void onReceive(final byte[] data) {
         try {
             VisionWrapper.Packet packet = VisionWrapper.Packet.parseFrom(data);
-            WorldUpdater.getInstance().update(packet, this.receivedData.size());
+            UpdaterWorld.getInstance().update(packet, this.receivedData.size());
         } catch (InvalidProtocolBufferException e) {
             this.logger.warn("Received packet could not parse with an error at {}", this.name);
         }

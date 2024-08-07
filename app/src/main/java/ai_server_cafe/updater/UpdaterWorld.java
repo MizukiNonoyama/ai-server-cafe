@@ -1,25 +1,19 @@
 package ai_server_cafe.updater;
 
-import ai_server_cafe.gui.GuiThread;
-import ai_server_cafe.gui.VisionArea;
-import ai_server_cafe.gui.interfaces.IGraphicalComponent;
-import ai_server_cafe.gui.item.CircleCafe;
-import ai_server_cafe.gui.item.LineCafe;
-import ai_server_cafe.gui.item.NoneCafe;
-import ai_server_cafe.gui.item.RectCafe;
+import ai_server_cafe.config.ConfigManager;
+import ai_server_cafe.filter.kalman.FilterBall;
 import ai_server_cafe.gui.registry.RegistryGUIItem;
 import ai_server_cafe.model.*;
 import ai_server_cafe.network.proto.ssl.vision.VisionDetection;
 import ai_server_cafe.network.proto.ssl.vision.VisionWrapper;
-import ai_server_cafe.util.TimeHelper;
-import ai_server_cafe.util.gui.ColorHelper;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class WorldUpdater {
-    private static WorldUpdater instance = null;
-
+public final class UpdaterWorld {
+    private static UpdaterWorld instance = null;
+    private UpdaterBall updaterBall;
     private Object ob;
     private boolean flagGeometry;
     private Field field;
@@ -30,21 +24,23 @@ public final class WorldUpdater {
     private double systemTime;
     private int visionPerSec;
 
-    private WorldUpdater() {
+    private UpdaterWorld() {
         this.flagGeometry = false;
         this.field = new Field();
         this.rawBallList = new ArrayList<>();
+        this.updaterBall = new UpdaterBall();
+        double lostDuration = ConfigManager.getInstance().getConfig().lostDuration;
+        this.updaterBall.setFilterSame(new FilterBall(lostDuration));
     }
 
-    public static WorldUpdater getInstance() {
+    public static UpdaterWorld getInstance() {
         if (instance == null) {
-            instance = new WorldUpdater();
+            instance = new UpdaterWorld();
         }
         return instance;
     }
 
-    synchronized public void update(VisionWrapper.Packet packet, int perSec) {
-
+    synchronized public void update(@Nonnull VisionWrapper.Packet packet, int perSec) {
         this.visionPerSec = perSec;
         this.flagGeometry = packet.hasGeometry();
         if (packet.hasGeometry()) {
@@ -60,8 +56,9 @@ public final class WorldUpdater {
 
         if (!packet.getDetection().getBallsList().isEmpty()) this.rawBallList.clear();
         for (VisionDetection.Ball detectedBall : packet.getDetection().getBallsList()) {
-            this.rawBallList.add(new RawBall(detectedBall.getX(), detectedBall.getY()));
+            this.rawBallList.add(new RawBall(detectedBall.getX(), detectedBall.getY(), detectedBall.getZ()));
         }
+        this.updaterBall.update(packet.getDetection());
     }
 
     synchronized public boolean hasGeometry() {
@@ -78,5 +75,9 @@ public final class WorldUpdater {
 
     synchronized public int getVisionPerSec() {
         return this.visionPerSec;
+    }
+
+    synchronized public FilteredBall getBall() {
+        return this.updaterBall.getValue().copy();
     }
 }

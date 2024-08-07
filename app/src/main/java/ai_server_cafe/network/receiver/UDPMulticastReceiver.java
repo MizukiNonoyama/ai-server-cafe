@@ -73,6 +73,7 @@ public abstract class UDPMulticastReceiver extends AbstractLoopThreadCafe {
         } catch (IOException e) {
             this.logger.error("UDP multicast could not receive with IOException");
         } catch (Exception e) {
+            e.printStackTrace();
             this.logger.error("Unknown error occurred");
         }
     }

@@ -24,6 +24,7 @@ public class Config {
     public double cyclePS;
     public double sendPS;
     public int[] radioTypes;
+    public double lostDuration;
 
     public Config() {
         this.isVisionAreaVisible = true;
@@ -47,6 +48,7 @@ public class Config {
         this.cyclePS = 60.0;
         this.sendPS = 60.0;
         this.radioTypes = new int[] {1};
+        this.lostDuration = 2.0;
     }
 
     public TeamColor getTeamColor() {

@@ -1,6 +1,5 @@
 package ai_server_cafe.updater;
 
-import ai_server_cafe.filter.AbstractFilter;
 import ai_server_cafe.filter.AbstractFilterManual;
 import ai_server_cafe.filter.AbstractFilterSame;
 import ai_server_cafe.model.FilteredRobot;
@@ -12,13 +11,13 @@ import ai_server_cafe.util.interfaces.IFunction;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-public class RobotUpdater {
+public class UpdaterRobot {
     public final Map<Integer, AbstractFilterSame<FilteredRobot, RawRobot>> filterSameMap;
     public final Map<Integer, AbstractFilterManual<FilteredRobot, RawRobot>> filterManualMap;
     public final Map<Integer, FilteredRobot> filteredRobotsMap;
     public final TeamColor color;
     private Optional<IFunction<AbstractFilterSame<FilteredRobot, RawRobot>>> initializeFilterFunc;
-    public RobotUpdater(TeamColor color) {
+    public UpdaterRobot(TeamColor color) {
         this.color = color;
         this.filterSameMap = new HashMap<>();
         this.filterManualMap = new HashMap<>();

@@ -1,8 +1,10 @@
 package ai_server_cafe.model;
 
+import ai_server_cafe.util.math.MathHelper;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
-public class FieldObject {
+public abstract class FieldObject {
     // 初期値は0
     protected double x = 0;
     protected double y = 0;
@@ -20,6 +22,12 @@ public class FieldObject {
     protected double omega = 0;
     protected double alpha = 0;
     protected double zeta = 0;
+
+    protected boolean lost;
+
+    public FieldObject() {
+        this.lost = false;
+    }
 
     public void setJx(double jx) {
         this.jx = jx;
@@ -156,4 +164,39 @@ public class FieldObject {
     public Vector3D velocityXYTheta() {
         return new Vector3D(this.vx, this.vy, this.omega);
     }
+
+    public Vector2D position() {
+        return new Vector2D(this.x, this.y);
+    }
+
+    public Vector2D velocity() {
+        return new Vector2D(this.vx, this.vy);
+    }
+
+    public boolean isLost() {
+        return this.lost;
+    }
+
+    public void setLost(boolean value) {
+        this.lost = lost;
+    }
+
+    public FieldObject invert() {
+        FieldObject obj = this.copy();
+        obj.x = -this.x;
+        obj.y = -this.y;
+        obj.vx = -this.vx;
+        obj.vy = -this.vy;
+        obj.ax = -this.ax;
+        obj.ay = -this.ay;
+        obj.jx = -this.jx;
+        obj.jy = -this.jy;
+        obj.theta = MathHelper.wrapPI(this.theta + MathHelper.PI);
+        return obj;
+    }
+
+    /**
+     * @return copied new instance
+     */
+    public abstract FieldObject copy();
 }
