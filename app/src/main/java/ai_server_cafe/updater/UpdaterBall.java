@@ -4,6 +4,7 @@ import ai_server_cafe.model.FilteredBall;
 import ai_server_cafe.model.RawBall;
 import ai_server_cafe.network.proto.ssl.vision.VisionDetection;
 import ai_server_cafe.util.interfaces.IFuncParam2;
+import ai_server_cafe.util.interfaces.InterfaceHelper;
 import ai_server_cafe.util.math.MathHelper;
 
 import javax.annotation.Nonnull;
@@ -16,7 +17,7 @@ import java.util.function.Supplier;
 
 public class UpdaterBall extends AbstractFilteredUpdater<FilteredBall, RawBall> {
     // 各カメラで検出されたボールの生データ
-    private Map<Integer, VisionDetection.Ball> rawBallMap;
+    private final Map<Integer, VisionDetection.Ball> rawBallMap;
 
     public UpdaterBall() {
         super(new FilteredBall());
@@ -37,7 +38,7 @@ public class UpdaterBall extends AbstractFilteredUpdater<FilteredBall, RawBall> 
             }
         }), this.invert);
         List<VisionDetection.Ball> balls = detection.getBallsList();
-        Optional<VisionDetection.Ball> candidate = balls.stream().min(MathHelper.getComparator(
+        Optional<VisionDetection.Ball> candidate = balls.stream().min(InterfaceHelper.getComparator(
                 new IFuncParam2<Boolean, VisionDetection.Ball, VisionDetection.Ball>() {
             @Override
             public Boolean function(VisionDetection.Ball ball, VisionDetection.Ball ball2) {
@@ -51,14 +52,14 @@ public class UpdaterBall extends AbstractFilteredUpdater<FilteredBall, RawBall> 
         }
         // 候補の中から, 最も前回と近いボールを求める
         Optional<VisionDetection.Ball> reliable = this.rawBallMap.values().stream().min(
-                MathHelper.getComparator(new IFuncParam2<Boolean, VisionDetection.Ball, VisionDetection.Ball>() {
+                InterfaceHelper.getComparator(new IFuncParam2<Boolean, VisionDetection.Ball, VisionDetection.Ball>() {
             @Override
             public Boolean function(VisionDetection.Ball ball, VisionDetection.Ball ball2) {
                 return MathHelper.distance2D(ball, ballNext) < MathHelper.distance2D(ball2, ballNext);
             }
         }));
         if (reliable.isPresent()) {
-            Optional<Integer> oCId = MathHelper.getKey(this.rawBallMap, reliable.get());
+            Optional<Integer> oCId = InterfaceHelper.getKey(this.rawBallMap, reliable.get());
             if (oCId.isPresent() && oCId.get() == cameraId) {
                 FilteredBall rawFb = new FilteredBall();
                 rawFb.setX(reliable.get().getX());
