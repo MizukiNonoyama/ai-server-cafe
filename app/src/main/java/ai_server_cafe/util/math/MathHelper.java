@@ -1,9 +1,6 @@
 package ai_server_cafe.util.math;
 
 import ai_server_cafe.model.FieldObject;
-import ai_server_cafe.util.interfaces.IFuncParam1;
-import ai_server_cafe.util.interfaces.IFuncParam2;
-import ai_server_cafe.util.interfaces.IFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -14,10 +11,6 @@ import org.apache.commons.math3.util.Pair;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Predicate;
 
 public class MathHelper {
     public static final double TWO_PI = 2.0 * Math.PI;
@@ -61,6 +54,12 @@ public class MathHelper {
         Rotation rot = new Rotation(MathHelper.AXIS_Z, radian, RotationConvention.VECTOR_OPERATOR);
         Vector3D vector3D = rot.applyTo(new Vector3D(vector2D.getX(), vector2D.getY(), 0.0));
         return new Vector2D(vector3D.getX(), vector3D.getY());
+    }
+
+    @Nonnull
+    public static Vector3D applyRotation(@Nonnull Vector3D vector3D, double radian, Vector3D axis) {
+        Rotation rot = new Rotation(axis, radian, RotationConvention.VECTOR_OPERATOR);
+        return rot.applyTo(vector3D);
     }
 
     @Nonnull
@@ -110,13 +109,32 @@ public class MathHelper {
     }
 
     public static boolean isNaN(double value) {
-        return Double.NaN == value;
+        return Double.isNaN(value);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T extends FieldObject> T invert(T t, boolean inverse) {
-        if (inverse)
-            return (T)t.invert();
-        return (T)t.copy();
+        try {
+            if (inverse) {
+                FieldObject invert = t.invert();
+                if(t.getClass().isInstance(invert)) {
+                    return (T) invert;
+                } else {
+                    throw new ClassCastException(invert.getClass().getName() +
+                            " is not instance of " + t.getClass().getName());
+                }
+            }
+            FieldObject copy = t.copy();
+            if(t.getClass().isInstance(copy)) {
+                return (T) copy;
+            } else {
+                throw new ClassCastException(copy.getClass().getName() +
+                        " is not instance of " + t.getClass().getName());
+            }
+        } catch(ClassCastException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     @Nonnull
@@ -127,11 +145,7 @@ public class MathHelper {
             double dx = x instanceof Float ? (double)(float)x : (double)x;
             double dy = y instanceof Float ? (double)(float)y : (double)y;
             return new Vector2D(dx, dy);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
@@ -151,11 +165,7 @@ public class MathHelper {
             double dy = y instanceof Float ? (double)(float)y : (double)y;
             double dz = z instanceof Float ? (double)(float)z : (double)z;
             return new Vector3D(dx, dy, dz);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }
@@ -169,12 +179,8 @@ public class MathHelper {
             double dx = x instanceof Float ? (double)(float)x : (double)x;
             double dy = y instanceof Float ? (double)(float)y : (double)y;
             double dTheta = theta instanceof Float ? (double)(float)theta : (double)theta;
-            return new Pair(new Vector2D(dx, dy), dTheta);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+            return new Pair<>(new Vector2D(dx, dy), dTheta);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
@@ -195,11 +201,7 @@ public class MathHelper {
             double dx = x instanceof Float ? (double)(float)x : (double)x;
             double dy = y instanceof Float ? (double)(float)y : (double)y;
             return new Vector2D(dx, dy);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
@@ -219,11 +221,7 @@ public class MathHelper {
             double dy = y instanceof Float ? (double)(float)y : (double)y;
             double dz = z instanceof Float ? (double)(float)z : (double)z;
             return new Vector3D(dx, dy, dz);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }

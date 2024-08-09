@@ -1,12 +1,12 @@
 package ai_server_cafe.model;
 
-import ai_server_cafe.util.interfaces.IFunction;
+import ai_server_cafe.util.interfaces.IFuncParam2;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
 public class FilteredBall extends AbstractFilteredObject<RawBall> {
-    protected Optional<IFunction<Optional<FilteredBall>>> estimator;
+    protected Optional<IFuncParam2<Optional<FilteredBall>, FilteredBall, Double>> estimator;
 
     public FilteredBall() {
         super();
@@ -48,11 +48,11 @@ public class FilteredBall extends AbstractFilteredObject<RawBall> {
     }
 
     @Override
-    public RawBall getRaw() {
+    synchronized public RawBall getRaw() {
         return new RawBall(this.x, this.y, this.z);
     }
 
-    public void setEstimator(IFunction<Optional<FilteredBall>> estimator) {
+    public void setEstimator(IFuncParam2<Optional<FilteredBall>, FilteredBall, Double> estimator) {
         this.estimator = Optional.of(estimator);
     }
 
@@ -60,7 +60,7 @@ public class FilteredBall extends AbstractFilteredObject<RawBall> {
         return this.estimator.isPresent();
     }
 
-    public Optional<IFunction<Optional<FilteredBall>>> getEstimator() {
+    public Optional<IFuncParam2<Optional<FilteredBall>, FilteredBall, Double>> getEstimator() {
         return this.estimator;
     }
 

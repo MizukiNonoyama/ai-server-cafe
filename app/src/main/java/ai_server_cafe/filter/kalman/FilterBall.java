@@ -6,10 +6,8 @@ import ai_server_cafe.filter.kalman.detail.LinerKalman;
 import ai_server_cafe.filter.kalman.detail.LinerSystem;
 import ai_server_cafe.filter.kalman.detail.Probability;
 import ai_server_cafe.model.FilteredBall;
-import ai_server_cafe.model.FilteredRobot;
 import ai_server_cafe.model.RawBall;
-import ai_server_cafe.model.RawRobot;
-import ai_server_cafe.util.interfaces.IFunction;
+import ai_server_cafe.util.interfaces.IFuncParam2;
 import ai_server_cafe.util.math.MathHelper;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -53,9 +51,12 @@ public class FilterBall extends AbstractFilterSame<FilteredBall, RawBall>  {
         this.prevTime = 0.0;
         this.prevObserveTime = 0.0;
         this.appearTime = 0.0;
-        this.obsModel = new LinerSystem.Observation(2, 4, MathHelper.makeIdentity(2, 4),
+        this.obsModel = new LinerSystem.Observation(4, 2, MathHelper.makeIdentity(2, 4),
                 MathHelper.makeIdentity(2, 2).scalarMultiply(Probability.toVariance(5.0)));
         this.ball = Optional.empty();
+        this.estimation = new Estimation(4, MathHelper.makeVectorMatrix(new double[]
+                {0.0, 0.0, 0.0, 0.0}
+        ), MathHelper.makeFill(4, 4, 0.0));
     }
 
     @Override
@@ -207,21 +208,18 @@ public class FilterBall extends AbstractFilterSame<FilteredBall, RawBall>  {
         }
 
         // (参考: Morrison, Faith A. An Introduction to Fluid Mechanics . Cambridge University
-        // Press, 2013. )
+        // Press, 2013.)
         return 24.0 / re + 2.6 * (re / 5.0) / (1.0 + Math.pow(re / 5.0, 1.52)) +
                 0.411 * Math.pow(re / 2.63e5, -7.94) / (1 + Math.pow(re / 2.63e5, -8)) +
                 0.25 * (re / 1.0e6) / (1.0 + re / 1.0e6);
     }
 
     @Nonnull
-    public static IFunction<Optional<FilteredBall>> getEstimator() {
-        return new IFunction<Optional<FilteredBall>>() {
+    public static IFuncParam2<Optional<FilteredBall>, FilteredBall, Double> getEstimator() {
+        return new IFuncParam2<Optional<FilteredBall>, FilteredBall, Double>() {
             @Override
-            public Optional<FilteredBall> function(Object... args) {
-                assert(args.length > 1);
-                assert(args[0] instanceof FilteredBall);
-                assert(args[1] instanceof Double);
-                return estimate((FilteredBall) args[0], (double)args[1]);
+            public Optional<FilteredBall> function(FilteredBall fb, Double t) {
+                return estimate(fb, t);
             }
         };
     }

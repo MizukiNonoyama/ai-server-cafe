@@ -4,6 +4,7 @@ import ai_server_cafe.filter.AbstractFilterSame;
 import ai_server_cafe.filter.kalman.detail.*;
 import ai_server_cafe.model.FilteredRobot;
 import ai_server_cafe.model.RawRobot;
+import ai_server_cafe.util.interfaces.IFuncParam2;
 import ai_server_cafe.util.interfaces.IFunction;
 import ai_server_cafe.util.math.MathHelper;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
@@ -27,24 +28,23 @@ public class FilterFreeRobot extends AbstractFilterSame<FilteredRobot, RawRobot>
 
     public FilterFreeRobot(double lostDuration) {
         this.lostDuration = lostDuration;
-        this.observation = new LinerSystem.Observation(6, 3, MathHelper.makeIdentity(6, 3),
+        this.observation = new LinerSystem.Observation(6, 3, MathHelper.makeIdentity(3, 6),
                 MathHelper.makeDiagonal(new double[] {Probability.toVariance(5.0), Probability.toVariance(5.0),
                 Probability.toVariance(Math.toRadians(5.0))}));
         this.prevTime = 0.0;
         this.prevObserveTime = 0.0;
+        this.estimation = new Estimation(6, MathHelper.makeVectorMatrix(new double[]
+                {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+        ), MathHelper.makeFill(6, 6, 0.0));
+        this.robot = Optional.empty();
     }
 
     @Nonnull
     public static NonLinerSystem.State makeStateModel(double dt) {
-        IFunction<RealMatrix> transitionFunc = new IFunction<RealMatrix>() {
+        IFuncParam2<RealMatrix, RealMatrix, RealMatrix> transitionFunc = new IFuncParam2<RealMatrix, RealMatrix, RealMatrix>() {
             @Override
             @Nonnull
-            public RealMatrix function(@Nonnull Object... args) {
-                assert(args.length > 0);
-                assert(args[0] instanceof RealMatrix);
-                assert(((RealMatrix)args[0]).getColumnDimension() == 1);
-                assert(((RealMatrix)args[0]).getRowDimension() == 6);
-                RealMatrix state = (RealMatrix)args[0];
+            public RealMatrix function(RealMatrix state, RealMatrix u) {
                 final double[] stateData = state.getColumn(0);
                 Vector3D r = new Vector3D(stateData[0], stateData[1], stateData[2]);
                 Vector3D v = new Vector3D(stateData[3], stateData[4], stateData[5]);
@@ -151,7 +151,7 @@ public class FilterFreeRobot extends AbstractFilterSame<FilteredRobot, RawRobot>
             Vector3D p = new Vector3D(rawP.getX(), rawP.getY(), this.estimation.getState().getEntry(2,0) +
                     MathHelper.wrapPI(rawP.getZ() - this.estimation.getState().getEntry(2,0)));
             // 補正
-            this.estimation        = LinerKalman.correct(this.estimation, MathHelper.makeVectorMatrix(new double[] {p.getX(), p.getY(), p.getZ()}), this.observation);
+            this.estimation = LinerKalman.correct(this.estimation, MathHelper.makeVectorMatrix(new double[] {p.getX(), p.getY(), p.getZ()}), this.observation);
             this.prevObserveTime = updateTime;
         }
 
@@ -193,14 +193,9 @@ public class FilterFreeRobot extends AbstractFilterSame<FilteredRobot, RawRobot>
         r.setVy(vField.getY());
         r.setOmega(vField.getZ());
         // 予測関数を設定
-        r.setEstimator(new IFunction<Optional<FilteredRobot>>() {
+        r.setEstimator(new IFuncParam2<Optional<FilteredRobot>, FilteredRobot, Double>() {
             @Override
-            public Optional<FilteredRobot> function(Object... args) {
-                assert(args.length > 1);
-                assert(args[0] instanceof FilteredRobot);
-                assert(args[1] instanceof Double);
-                final FilteredRobot fr = (FilteredRobot) args[0];
-                final double t = (double) args[1];
+            public Optional<FilteredRobot> function(FilteredRobot fr, Double t) {
                 // 初期値を設定
                 // 位置: フィールド基準
                 Vector3D rawP = fr.positionXYTheta();

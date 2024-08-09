@@ -6,14 +6,14 @@ import ai_server_cafe.util.thread.AbstractLoopThreadCafe;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Deque;
+import java.util.List;
 
 public abstract class UDPMulticastReceiver extends AbstractLoopThreadCafe {
     private MulticastSocket socket = null;
 
-    protected Deque<ReceivedData> receivedData;
+    protected List<ReceivedData> receivedData;
 
     protected UDPMulticastReceiver(String name) {
         super(name);
@@ -63,7 +63,7 @@ public abstract class UDPMulticastReceiver extends AbstractLoopThreadCafe {
             final DatagramPacket packet = new DatagramPacket(buf, buf.length);
             this.socket.receive(packet);
             final byte[] packetData = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
-            this.receivedData.push(new ReceivedData(packetData, TimeHelper.now()));
+            this.receivedData.addLast(new ReceivedData(packetData, TimeHelper.now()));
             while (TimeHelper.now() - this.receivedData.getFirst().receivedTime > this.dataStockingTime()) {
                 this.receivedData.removeFirst();
             }
@@ -87,7 +87,7 @@ public abstract class UDPMulticastReceiver extends AbstractLoopThreadCafe {
     @Override
     protected void init() {
         int timeout = this.getTimeout();
-        this.receivedData = new ArrayDeque<>();
+        this.receivedData = new ArrayList<>();
         if (timeout > 0) {
             try {
                 this.socket.setSoTimeout(timeout);

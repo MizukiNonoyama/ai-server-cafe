@@ -20,4 +20,8 @@ public enum TeamColor {
         }
         return TeamColor.BLUE;
     }
+
+    public boolean isYellow() {
+        return this == YELLOW;
+    }
 }

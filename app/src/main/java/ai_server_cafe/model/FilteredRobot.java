@@ -1,12 +1,12 @@
 package ai_server_cafe.model;
 
-import ai_server_cafe.util.interfaces.IFunction;
+import ai_server_cafe.util.interfaces.IFuncParam2;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
 public class FilteredRobot extends AbstractFilteredObject<RawRobot> {
-    protected Optional<IFunction<Optional<FilteredRobot>>> estimator;
+    protected Optional<IFuncParam2<Optional<FilteredRobot>, FilteredRobot, Double>> estimator;
 
     public FilteredRobot() {
         super();
@@ -14,7 +14,7 @@ public class FilteredRobot extends AbstractFilteredObject<RawRobot> {
     }
 
     @Override
-    public FilteredRobot copy() {
+    synchronized public FilteredRobot copy() {
         FilteredRobot fr = new FilteredRobot();
         fr.estimator = this.estimator;
         fr.lost = this.lost;
@@ -45,24 +45,24 @@ public class FilteredRobot extends AbstractFilteredObject<RawRobot> {
     }
 
     @Override
-    public RawRobot getRaw() {
+    synchronized public RawRobot getRaw() {
         return new RawRobot(this.x, this.y, this.theta);
     }
 
 
-    public void setEstimator(IFunction<Optional<FilteredRobot>> estimator) {
+    synchronized public void setEstimator(IFuncParam2<Optional<FilteredRobot>, FilteredRobot, Double> estimator) {
         this.estimator = Optional.of(estimator);
     }
 
-    public boolean hasEstimator() {
+    synchronized public boolean hasEstimator() {
         return this.estimator.isPresent();
     }
 
-    public Optional<IFunction<Optional<FilteredRobot>>> getEstimator() {
+    synchronized public Optional<IFuncParam2<Optional<FilteredRobot>, FilteredRobot, Double>> getEstimator() {
         return this.estimator;
     }
 
-    public Optional<FilteredRobot> getStateAfter(double offset) {
+    synchronized public Optional<FilteredRobot> getStateAfter(double offset) {
         if (this.hasEstimator()) {
             return this.getEstimator().get().function(this, offset);
         }

@@ -6,6 +6,7 @@ import ai_server_cafe.network.proto.ssl.vision.VisionDetection;
 import ai_server_cafe.util.interfaces.IFuncParam2;
 import ai_server_cafe.util.interfaces.InterfaceHelper;
 import ai_server_cafe.util.math.MathHelper;
+import org.apache.commons.math3.util.Pair;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -19,9 +20,10 @@ public class UpdaterBall extends AbstractFilteredUpdater<FilteredBall, RawBall> 
     // 各カメラで検出されたボールの生データ
     private final Map<Integer, VisionDetection.Ball> rawBallMap;
 
-    public UpdaterBall() {
-        super(new FilteredBall());
+    public UpdaterBall(boolean initInvert) {
+        super(new FilteredBall(), initInvert);
         this.rawBallMap = new HashMap<>();
+        this.value.setLost(true);
     }
 
     synchronized public void update(@Nonnull VisionDetection.Frame detection) {
@@ -51,20 +53,20 @@ public class UpdaterBall extends AbstractFilteredUpdater<FilteredBall, RawBall> 
             this.rawBallMap.remove(cameraId);
         }
         // 候補の中から, 最も前回と近いボールを求める
-        Optional<VisionDetection.Ball> reliable = this.rawBallMap.values().stream().min(
-                InterfaceHelper.getComparator(new IFuncParam2<Boolean, VisionDetection.Ball, VisionDetection.Ball>() {
-            @Override
-            public Boolean function(VisionDetection.Ball ball, VisionDetection.Ball ball2) {
-                return MathHelper.distance2D(ball, ballNext) < MathHelper.distance2D(ball2, ballNext);
-            }
-        }));
+        Optional<Pair<Integer, VisionDetection.Ball>> reliable = InterfaceHelper.makePairList(this.rawBallMap).stream().min(
+                InterfaceHelper.getComparator(new IFuncParam2<Boolean, Pair<Integer, VisionDetection.Ball>, Pair<Integer, VisionDetection.Ball>>() {
+                    @Override
+                    public Boolean function(Pair<Integer, VisionDetection.Ball> integerBallPair, Pair<Integer, VisionDetection.Ball> integerBallPair2) {
+                        return MathHelper.distance2D(integerBallPair.getValue(), ballNext) < MathHelper.distance2D(integerBallPair2.getValue(), ballNext);
+                    }
+                }));
         if (reliable.isPresent()) {
-            Optional<Integer> oCId = InterfaceHelper.getKey(this.rawBallMap, reliable.get());
-            if (oCId.isPresent() && oCId.get() == cameraId) {
+            int oCId = reliable.get().getKey();
+            if (oCId == cameraId) {
                 FilteredBall rawFb = new FilteredBall();
-                rawFb.setX(reliable.get().getX());
-                rawFb.setY(reliable.get().getY());
-                rawFb.setZ(reliable.get().getZ());
+                rawFb.setX(reliable.get().getValue().getX());
+                rawFb.setY(reliable.get().getValue().getY());
+                rawFb.setZ(reliable.get().getValue().getZ());
                 rawFb = MathHelper.invert(rawFb, this.invert);
                 if (this.filterSame.isPresent()) {
                     // filterSame が設定されていたらFilterを通した値を使う
@@ -87,8 +89,10 @@ public class UpdaterBall extends AbstractFilteredUpdater<FilteredBall, RawBall> 
             Optional<FilteredBall> ofb = this.filterSame.get().updateRaw(Optional.empty(), captureTime);
             if (ofb.isPresent()) {
                 this.value = ofb.get();
+                this.value.setLost(false);
+            } else {
+                this.value.setLost(true);
             }
-            this.value.setLost(true);
         } else if(this.filterManual.isPresent()) {
             this.filterManual.get().updateRaw(Optional.empty(), captureTime);
         } else {

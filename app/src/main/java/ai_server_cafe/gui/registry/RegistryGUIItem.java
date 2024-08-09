@@ -2,6 +2,7 @@ package ai_server_cafe.gui.registry;
 
 import ai_server_cafe.config.Config;
 import ai_server_cafe.config.ConfigManager;
+import ai_server_cafe.filter.kalman.FilterFreeRobot;
 import ai_server_cafe.gui.ConfigArea;
 import ai_server_cafe.gui.GameWindow;
 import ai_server_cafe.gui.GuiThread;
@@ -14,6 +15,8 @@ import ai_server_cafe.gui.item.LineCafe;
 import ai_server_cafe.gui.item.NoneCafe;
 import ai_server_cafe.gui.item.RectCafe;
 import ai_server_cafe.model.Field;
+import ai_server_cafe.model.FilteredRobot;
+import ai_server_cafe.model.RawRobot;
 import ai_server_cafe.updater.UpdaterWorld;
 import ai_server_cafe.util.TeamColor;
 import ai_server_cafe.util.gui.ColorHelper;
@@ -25,6 +28,7 @@ import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class RegistryGUIItem {
     public static void registerContents(@Nonnull GameWindow window) {
@@ -88,25 +92,37 @@ public class RegistryGUIItem {
     @Nonnull
     public static List<Pair<Class<? extends IContainerCafe>, IGraphicalComponent>> updateDynamicGraphicalContents(@Nonnull List<Pair<Class<? extends IContainerCafe>, IGraphicalComponent>> components) {
         UpdaterWorld updater = UpdaterWorld.getInstance();
-        components.add(new Pair(VisionArea.class,
+        Field field = updater.getField();
+        components.add(new Pair<>(VisionArea.class,
+                new RectCafe("background", -field.getCarpetWidth() / 2.0, -field.getCarpetHeight() / 2.0, field.getCarpetWidth(), field.getCarpetHeight(), ColorHelper.SCREEN_BLACK)));
+        components.add(new Pair<>(VisionArea.class,
+                new LineCafe("goalToGoalLine", -field.getGameWidth() / 2.0, 0.0, field.getGameWidth() / 2.0, 0.0, ColorHelper.LINE_WHITE, 4.0F)));
+        components.add(new Pair<>(VisionArea.class,
+                new LineCafe("centerLine", 0.0, -field.getGameHeight() / 2.0, 0.0, field.getGameHeight() / 2.0, ColorHelper.LINE_WHITE, 4.0F)));
+        components.add(new Pair<>(VisionArea.class,
+                new RectCafe("fieldLine", -field.getGameWidth() / 2.0, -field.getGameHeight() / 2.0, field.getGameWidth(), field.getGameHeight(), ColorHelper.LINE_WHITE, 4.0F)));
+        components.add(new Pair<>(VisionArea.class,
+                new RectCafe("outsideLine", -field.getFieldWidth() / 2.0, -field.getFieldHeight() / 2.0, field.getFieldWidth(), field.getFieldHeight(), ColorHelper.WALL_RED, 8.0F)));
+        components.add(new Pair<>(VisionArea.class,
+                new CircleCafe("centerCircle", ColorHelper.LINE_WHITE, 0.0, 0.0, field.getCenterCircle(), false, 4.0F)));
+        components.add(new Pair<>(VisionArea.class,
+                new RectCafe("ourPenalty", -field.getGameWidth() / 2.0, -field.getPenaltyWidth() / 2.0, field.getPenaltyLength(), field.getPenaltyWidth(), ColorHelper.LINE_WHITE, 4.0F)));
+        components.add(new Pair<>(VisionArea.class,
+                new RectCafe("oppositePenalty", field.getGameWidth() / 2.0 - field.getPenaltyLength(), -field.getPenaltyWidth() / 2.0, field.getPenaltyLength(), field.getPenaltyWidth(), ColorHelper.LINE_WHITE, 4.0F)));
+        components.add(new Pair<>(VisionArea.class,
+                new RectCafe("ourGoal", -field.getGameWidth() / 2.0 - field.getGoalLength(), -field.getGoalWidth() / 2.0, field.getGoalLength(), field.getGoalWidth(), ColorHelper.LINE_WHITE, 4.0F)));
+        components.add(new Pair<>(VisionArea.class,
+                new RectCafe("oppositeGoal", field.getGameWidth() / 2.0, -field.getGoalWidth() / 2.0, field.getGoalLength(), field.getGoalWidth(), ColorHelper.LINE_WHITE, 4.0F)));
+        components.add(new Pair<>(VisionArea.class,
                 new CircleCafe("ball", ColorHelper.BALL_ORANGE, updater.getBall().getX(), updater.getBall().getY(), 21, true, 4.0F)));
+        for (Map.Entry<Integer, FilteredRobot> blueRobot : updater.getBlueFilteredRobots().entrySet()) {
+            components.add(new Pair<>(VisionArea.class,
+                    new CircleCafe("blue_robot_" + blueRobot.getKey(), ColorHelper.ROBOT_BLUE, blueRobot.getValue().getX(), blueRobot.getValue().getY(), 90, true, 4.0F)));
+        }
+        for (Map.Entry<Integer, FilteredRobot> yellowRobot : updater.getYellowFilteredRobots().entrySet()) {
+            components.add(new Pair<>(VisionArea.class,
+                    new CircleCafe("yellow_robot_" + yellowRobot.getKey(), ColorHelper.ROBOT_YELLOW, yellowRobot.getValue().getX(), yellowRobot.getValue().getY(), 90, true, 4.0F)));
+        }
         return components;
-    }
-
-    // Call from world updater
-    public static void updateFieldStaticGraphicalContents(@Nonnull Field field) {
-        List<IGraphicalComponent> components = new ArrayList<>();
-        components.add(new RectCafe("background", -field.getCarpetWidth() / 2.0, -field.getCarpetHeight() / 2.0, field.getCarpetWidth(), field.getCarpetHeight(), ColorHelper.SCREEN_BLACK));
-        components.add(new LineCafe("goalToGoalLine", -field.getGameWidth() / 2.0, 0.0, field.getGameWidth() / 2.0, 0.0, ColorHelper.LINE_WHITE, 4.0F));
-        components.add(new LineCafe("centerLine", 0.0, -field.getGameHeight() / 2.0, 0.0, field.getGameHeight() / 2.0, ColorHelper.LINE_WHITE, 4.0F));
-        components.add(new RectCafe("fieldLine", -field.getGameWidth() / 2.0, -field.getGameHeight() / 2.0, field.getGameWidth(), field.getGameHeight(), ColorHelper.LINE_WHITE, 4.0F));
-        components.add(new RectCafe("outsideLine", -field.getFieldWidth() / 2.0, -field.getFieldHeight() / 2.0, field.getFieldWidth(), field.getFieldHeight(), ColorHelper.WALL_RED, 8.0F));
-        components.add(new CircleCafe("centerCircle", ColorHelper.LINE_WHITE, 0.0, 0.0, field.getCenterCircle(), false, 4.0F));
-        components.add(new RectCafe("ourPenalty", -field.getGameWidth() / 2.0, -field.getPenaltyWidth() / 2.0, field.getPenaltyLength(), field.getPenaltyWidth(), ColorHelper.LINE_WHITE, 4.0F));
-        components.add(new RectCafe("oppositePenalty", field.getGameWidth() / 2.0 - field.getPenaltyLength(), -field.getPenaltyWidth() / 2.0, field.getPenaltyLength(), field.getPenaltyWidth(), ColorHelper.LINE_WHITE, 4.0F));
-        components.add(new RectCafe("ourGoal", -field.getGameWidth() / 2.0 - field.getGoalLength(), -field.getGoalWidth() / 2.0, field.getGoalLength(), field.getGoalWidth(), ColorHelper.LINE_WHITE, 4.0F));
-        components.add(new RectCafe("oppositeGoal", field.getGameWidth() / 2.0, -field.getGoalWidth() / 2.0, field.getGoalLength(), field.getGoalWidth(), ColorHelper.LINE_WHITE, 4.0F));
-
-        GuiThread.getInstance().addAllGraphicalComponents(VisionArea.class, components);
     }
 }

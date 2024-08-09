@@ -178,7 +178,7 @@ public abstract class FieldObject {
     }
 
     public void setLost(boolean value) {
-        this.lost = lost;
+        this.lost = value;
     }
 
     public FieldObject invert() {
